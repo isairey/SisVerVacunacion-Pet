@@ -1,0 +1,307 @@
+{% extends 'admin_dashboard/base.html' %}
+{% load static %}
+
+{% block title %}Gestión de Documentos - Admin{% endblock %}
+
+{% block content %}
+<div style="padding: 2rem;">
+
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem;">
+                <i class="bi bi-file-earmark-text"></i> Gestión de Documentos
+            </h1>
+            <p style="color: #64748b;">
+                Sube documentos PDF para que los usuarios puedan descargarlos
+            </p>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem;">
+
+        <!-- Formulario -->
+        <div style="background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); height: fit-content;">
+
+            <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                <i class="bi bi-upload" style="font-size:1.5rem;"></i>
+                Subir Nuevo Documento
+            </h2>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;">
+                        Título *
+                    </label>
+
+                    <input type="text"
+                           name="title"
+                           required
+                           placeholder="Ej: Guía de Vacunación 2026"
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem;">
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;">
+                        Descripción
+                    </label>
+
+                    <textarea name="description"
+                              rows="3"
+                              placeholder="Breve descripción del documento..."
+                              style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem; resize: vertical;">
+                    </textarea>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;">
+                        Categoría *
+                    </label>
+
+                    <select name="category"
+                            required
+                            style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem;">
+
+                        {% for value, label in category_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;">
+                        Icono (Emoji)
+                    </label>
+
+                    <input type="text"
+                           name="icon"
+                           value="📄"
+                           maxlength="10"
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem;">
+
+                    <!-- ESTA LINEA NO SE CAMBIÓ -->
+                    <small style="color: #64748b; font-size: 0.875rem;">
+                        Sugerencias: 📄 📋 📝 🏥 💉 🐕 🐈
+                    </small>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem;">
+                        Archivo PDF *
+                    </label>
+
+                    <input type="file"
+                           name="file"
+                           accept=".pdf"
+                           required
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.5rem; font-size: 1rem;">
+
+                    <small style="color: #64748b; font-size: 0.875rem;">
+                        Solo archivos PDF (máx. 10MB)
+                    </small>
+                </div>
+
+                <button type="submit"
+                        style="width: 100%; padding: 0.875rem; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; font-size: 1rem;">
+
+                    <i class="bi bi-upload"></i> Subir Documento
+
+                </button>
+
+            </form>
+        </div>
+
+
+        <!-- Lista de documentos -->
+        <div>
+
+            <div style="background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+                <h2 style="font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="bi bi-collection" style="font-size:1.5rem;"></i>
+                    Documentos Disponibles ({{ documents.count }})
+                </h2>
+
+
+                {% if documents %}
+
+                <div style="display: grid; gap: 1rem;">
+
+                    {% for doc in documents %}
+
+                    <div style="border: 2px solid {% if doc.is_active %}#e5e7eb{% else %}#fecaca{% endif %};
+                                border-radius: 0.75rem;
+                                padding: 1.25rem;
+                                {% if not doc.is_active %}opacity:0.6;{% endif %}">
+
+                        <div style="display:flex; gap:1rem; align-items:start;">
+
+                            <!-- Icono -->
+                            <div style="width:60px;
+                                        height:60px;
+                                        background:linear-gradient(135deg,#dbeafe 0%,#bae6fd 100%);
+                                        border-radius:0.75rem;
+                                        display:flex;
+                                        align-items:center;
+                                        justify-content:center;
+                                        font-size:2rem;
+                                        flex-shrink:0;">
+
+                                {{ doc.icon }}
+
+                            </div>
+
+
+                            <div style="flex:1;">
+
+                                <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:0.5rem;">
+
+                                    <div>
+
+                                        <h3 style="font-size:1.125rem; font-weight:700; color:#0f172a; margin-bottom:0.25rem;">
+                                            {{ doc.title }}
+                                        </h3>
+
+                                        <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+
+                                            <span style="display:inline-block;
+                                                         padding:0.25rem 0.75rem;
+                                                         background:#dbeafe;
+                                                         color:#1e40af;
+                                                         border-radius:9999px;
+                                                         font-size:0.75rem;
+                                                         font-weight:600;">
+
+                                                {{ doc.get_category_display }}
+
+                                            </span>
+
+                                            <span style="font-size:0.875rem; color:#64748b;">
+                                                <i class="bi bi-folder"></i> {{ doc.get_file_size }}
+                                            </span>
+
+                                            <span style="font-size:0.875rem; color:#64748b;">
+                                                <i class="bi bi-calendar"></i> {{ doc.created_at|date:"d/m/Y" }}
+                                            </span>
+
+                                            {% if doc.is_active %}
+                                                <span style="font-size:0.875rem; color:#059669; font-weight:600;">
+                                                    ✓ Activo
+                                                </span>
+                                            {% else %}
+                                                <span style="font-size:0.875rem; color:#dc2626; font-weight:600;">
+                                                    ✗ Inactivo
+                                                </span>
+                                            {% endif %}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                {% if doc.description %}
+
+                                <p style="color:#64748b; font-size:0.875rem; margin-bottom:1rem;">
+                                    {{ doc.description }}
+                                </p>
+
+                                {% endif %}
+
+
+                                <!-- Acciones -->
+                                <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+
+                                    <a href="{{ doc.file.url }}"
+                                       target="_blank"
+                                       style="display:inline-flex; align-items:center; gap:0.5rem;
+                                              padding:0.5rem 1rem;
+                                              background:#0284c7;
+                                              color:white;
+                                              border-radius:0.5rem;
+                                              text-decoration:none;
+                                              font-size:0.875rem;
+                                              font-weight:600;">
+
+                                        <i class="bi bi-eye"></i> Ver PDF
+
+                                    </a>
+
+
+                                    <a href="{% url 'admin_dashboard:toggle_document' doc.id %}"
+                                       style="display:inline-flex; align-items:center; gap:0.5rem;
+                                              padding:0.5rem 1rem;
+                                              background:{% if doc.is_active %}#f59e0b{% else %}#10b981{% endif %};
+                                              color:white;
+                                              border-radius:0.5rem;
+                                              text-decoration:none;
+                                              font-size:0.875rem;
+                                              font-weight:600;">
+
+                                        {% if doc.is_active %}
+                                            <i class="bi bi-pause"></i> Desactivar
+                                        {% else %}
+                                            <i class="bi bi-play"></i> Activar
+                                        {% endif %}
+
+                                    </a>
+
+
+                                    <a href="{% url 'admin_dashboard:delete_document' doc.id %}"
+                                       onclick="return confirm('¿Estás seguro de eliminar este documento?')"
+                                       style="display:inline-flex; align-items:center; gap:0.5rem;
+                                              padding:0.5rem 1rem;
+                                              background:#dc2626;
+                                              color:white;
+                                              border-radius:0.5rem;
+                                              text-decoration:none;
+                                              font-size:0.875rem;
+                                              font-weight:600;">
+
+                                        <i class="bi bi-trash"></i> Eliminar
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+                {% else %}
+
+                <div style="text-align:center; padding:3rem; background:#f9fafb; border-radius:0.75rem;">
+
+                    <div style="font-size:4rem; margin-bottom:1rem; opacity:0.5;">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+
+                    <p style="color:#9ca3af; font-size:1.125rem;">
+                        No hay documentos disponibles
+                    </p>
+
+                    <p style="color:#9ca3af; font-size:0.875rem;">
+                        Sube tu primer documento usando el formulario
+                    </p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}

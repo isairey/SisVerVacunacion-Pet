@@ -1,0 +1,272 @@
+{% extends 'booking/base.html' %}
+{% load static %}
+
+{% block title %}Mi Perfil - Vetify{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/profile-styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- HEADER DE LA PÁGINA -->
+<section class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1 class="page-header-title">
+                <span class="page-header-icon"><i class="bi bi-person-circle"></i></span>
+                Mi Perfil
+            </h1>
+            <p class="page-header-subtitle">
+                Gestiona tu información personal y tus mascotas registradas
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="profile-container">
+    <!-- CARD DE INFORMACIÓN PERSONAL -->
+    <div class="profile-card">
+        <div class="profile-card-header">
+            <h2 class="profile-card-title">
+                <i class="bi bi-person-badge"></i>
+                Información Personal
+            </h2>
+            <a href="{% url 'edit_profile' %}" class="btn-edit-profile">
+                <i class="bi bi-pencil-square"></i>
+                Editar Perfil
+            </a>
+        </div>
+
+        <div class="profile-content">
+            <!-- Avatar Section -->
+            <div class="profile-avatar-section">
+                <div class="profile-avatar">
+                    {% if user.profile.avatar %}
+                        <img src="{{ user.profile.avatar.url }}" alt="{{ user.get_full_name }}">
+                    {% else %}
+                        <div class="profile-avatar-placeholder">
+                            <span>{{ user.first_name|first|default:user.username|first|upper }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="profile-avatar-info">
+                    <h3 class="profile-user-name">{{ user.get_full_name|default:user.username }}</h3>
+                    <p class="profile-user-role">Cliente Vetify</p>
+                    <span class="profile-user-badge">
+                        <i class="bi bi-patch-check-fill"></i>
+                        Verificado
+                    </span>
+                </div>
+            </div>
+
+            <div class="profile-info-grid">
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <div class="profile-info-content">
+                        <div class="profile-info-label">Correo Electrónico</div>
+                        <div class="profile-info-value">{{ user.email }}</div>
+                    </div>
+                </div>
+
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="bi bi-telephone-fill"></i>
+                    </div>
+                    <div class="profile-info-content">
+                        <div class="profile-info-label">Teléfono</div>
+                        <div class="profile-info-value">{{ user.profile.phone|default:"No registrado" }}</div>
+                    </div>
+                </div>
+
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="bi bi-geo-alt-fill"></i>
+                    </div>
+                    <div class="profile-info-content">
+                        <div class="profile-info-label">Dirección</div>
+                        <div class="profile-info-value">{{ user.profile.address|default:"No registrada" }}</div>
+                    </div>
+                </div>
+
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="bi bi-calendar-check-fill"></i>
+                    </div>
+                    <div class="profile-info-content">
+                        <div class="profile-info-label">Miembro Desde</div>
+                        <div class="profile-info-value">{{ user.date_joined|date:"d M Y" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTADÍSTICAS -->
+    <div class="profile-stats-grid">
+        <div class="profile-stat-card">
+            <div class="profile-stat-icon profile-stat-icon-blue">
+                <i class="bi bi-calendar-event"></i>
+            </div>
+            <div class="profile-stat-content">
+                <div class="profile-stat-value">{{ total_appointments|default:0 }}</div>
+                <div class="profile-stat-label">Citas Totales</div>
+            </div>
+        </div>
+
+        <div class="profile-stat-card">
+            <div class="profile-stat-icon profile-stat-icon-green">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="profile-stat-content">
+                <div class="profile-stat-value">{{ completed_appointments|default:0 }}</div>
+                <div class="profile-stat-label">Completadas</div>
+            </div>
+        </div>
+
+        <div class="profile-stat-card">
+            <div class="profile-stat-icon profile-stat-icon-purple">
+                <i class="bi bi-heart-pulse"></i>
+            </div>
+            <div class="profile-stat-content">
+                <div class="profile-stat-value">{{ user.pets.count|default:0 }}</div>
+                <div class="profile-stat-label">Mascotas</div>
+            </div>
+        </div>
+
+        <div class="profile-stat-card">
+            <div class="profile-stat-icon profile-stat-icon-orange">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="profile-stat-content">
+                <div class="profile-stat-value">{{ pending_appointments|default:0 }}</div>
+                <div class="profile-stat-label">Pendientes</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MASCOTAS -->
+    <div class="profile-card">
+        <div class="profile-card-header">
+            <h2 class="profile-card-title">
+                <i class="bi bi-heart-fill"></i>
+                Mis Mascotas
+            </h2>
+            <a href="{% url 'register_pet' %}" class="btn-add-pet">
+                <i class="bi bi-plus-circle"></i>
+                Agregar Mascota
+            </a>
+        </div>
+
+        <div class="pets-grid">
+            {% for pet in user.pets.all %}
+            <div class="pet-card">
+                <div class="pet-card-header">
+                    <div class="pet-avatar">
+                        {% if pet.photo %}
+                            <img src="{{ pet.photo.url }}" alt="{{ pet.name }}"
+                                style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
+                        {% else %}
+                            {% if pet.pet_type == "dog" %}🐶
+                            {% elif pet.pet_type == "cat" %}🐱
+                            {% else %}🐾{% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="pet-info">
+                        <h3 class="pet-name">{{ pet.name }}</h3>
+                        <span class="pet-badge pet-badge-{{ pet.pet_type }}">
+                            {{ pet.get_pet_type_display }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="pet-details">
+                    <div class="pet-detail-item">
+                        <i class="bi bi-palette"></i>
+                        <span>{{ pet.breed|default:"Sin raza" }}</span>
+                    </div>
+                    <div class="pet-detail-item">
+                        <i class="bi bi-calendar3"></i>
+                        <span>
+                            {% if pet.date_of_birth %}
+                                {{ pet.date_of_birth|date:"d/m/Y" }}
+                            {% else %}
+                                Fecha no registrada
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="pet-detail-item">
+                        <i class="bi bi-heart-pulse"></i>
+                        <span>{{ pet.get_vaccination_status_display }}</span>
+                    </div>
+                </div>
+
+                <div class="pet-actions">
+                    <a href="{% url 'edit_pet' pet.id %}" class="pet-btn pet-btn-edit">
+                        <i class="bi bi-pencil"></i>
+                        Editar
+                    </a>
+                    <a href="{% url 'booking' %}?pet={{ pet.id }}" class="pet-btn pet-btn-primary">
+                        <i class="bi bi-calendar-plus"></i>
+                        Reservar
+                    </a>
+                    <a href="{% url 'pet_detail' pet.id %}"
+                        style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.5rem 1rem; background:#dbeafe; color:#1e40af; border-radius:0.5rem; text-decoration:none; font-size:0.875rem; font-weight:600; margin-top:0.5rem;">
+                        <i class="bi bi-capsule"></i> Ver vacunas
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-emoji-frown"></i>
+                </div>
+                <h3 class="empty-state-title">No tienes mascotas registradas</h3>
+                <p class="empty-state-text">Agrega tu primera mascota para comenzar a hacer reservas</p>
+                <a href="{% url 'register_pet' %}" class="empty-state-btn">
+                    <i class="bi bi-plus-circle"></i>
+                    Registrar Mi Primera Mascota
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ACCIONES -->
+    <div class="profile-quick-actions">
+        <a href="{% url 'appointments' %}" class="quick-action-card">
+            <div class="quick-action-icon">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Mis Citas</h3>
+                <p class="quick-action-text">Ver historial de citas</p>
+            </div>
+            <i class="bi bi-chevron-right quick-action-arrow"></i>
+        </a>
+
+        <a href="{% url 'booking' %}" class="quick-action-card">
+            <div class="quick-action-icon">
+                <i class="bi bi-calendar-plus"></i>
+            </div>
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Nueva Reserva</h3>
+                <p class="quick-action-text">Agendar nueva cita</p>
+            </div>
+            <i class="bi bi-chevron-right quick-action-arrow"></i>
+        </a>
+
+        <a href="{% url 'services_schedules' %}" class="quick-action-card">
+            <div class="quick-action-icon">
+                <i class="bi bi-hospital"></i>
+            </div>
+            <div class="quick-action-content">
+                <h3 class="quick-action-title">Servicios</h3>
+                <p class="quick-action-text">Ver servicios disponibles</p>
+            </div>
+            <i class="bi bi-chevron-right quick-action-arrow"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

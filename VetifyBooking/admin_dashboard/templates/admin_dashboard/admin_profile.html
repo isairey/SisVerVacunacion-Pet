@@ -1,0 +1,106 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Mi Perfil - Vetify Admin{% endblock %}
+{% block page_title %}Mi Perfil{% endblock %}
+
+{% block content %}
+<div style="max-width:700px; margin:0 auto;">
+
+    <!-- Avatar card -->
+    <div style="background:white; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:1.5rem; display:flex; align-items:center; gap:1.5rem;">
+        <div style="width:80px; height:80px; border-radius:50%; background:linear-gradient(135deg,#38bdf8,#0284c7); display:flex; align-items:center; justify-content:center; font-size:2rem; font-weight:700; color:white; flex-shrink:0;">
+            {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+        </div>
+        <div>
+            <h2 style="font-size:1.5rem; font-weight:700; color:#0f172a;">{{ user.get_full_name|default:user.username }}</h2>
+            <p style="color:#6b7280; font-size:0.875rem;">{{ user.email }}</p>
+            <span style="display:inline-block; margin-top:0.5rem; padding:0.25rem 0.75rem; background:#dbeafe; color:#1e40af; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                <i class="bi bi-shield-check"></i> Superadministrador
+            </span>
+        </div>
+    </div>
+
+    <!-- Form card -->
+    <div style="background:white; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="font-weight:700; color:#0f172a; margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:2px solid #e5e7eb;">
+            <i class="bi bi-pencil"></i> Editar Información
+        </h3>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Nombre</label>
+                    <input type="text" name="first_name" value="{{ user.first_name }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Apellido</label>
+                    <input type="text" name="last_name" value="{{ user.last_name }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+                <label style="font-size:0.875rem; font-weight:600; color:#374151;">Email</label>
+                <input type="email" name="email" value="{{ user.email }}"
+                       style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+                <label style="font-size:0.875rem; font-weight:600; color:#374151;">Usuario</label>
+                <input type="text" value="{{ user.username }}" disabled
+                       style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; background:#f9fafb; color:#6b7280;">
+                <small style="color:#9ca3af; font-size:0.75rem;">El nombre de usuario no se puede cambiar</small>
+            </div>
+
+            <!-- Cambiar contraseña -->
+            <div style="background:#f9fafb; border-radius:0.75rem; padding:1.25rem; margin-bottom:1.5rem; margin-top:1.5rem;">
+                <h4 style="font-weight:700; color:#374151; margin-bottom:1rem; font-size:0.875rem;">
+                    <i class="bi bi-lock"></i> Cambiar Contraseña (opcional)
+                </h4>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Nueva contraseña</label>
+                    <input type="password" name="new_password" placeholder="Dejar vacío para no cambiar"
+                           style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+            </div>
+            
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+                <label style="font-size:0.875rem; font-weight:600; color:#374151;">Foto de perfil</label>
+                <input type="file" name="avatar" accept="image/*"
+                    style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+                <a href="{% url 'admin_dashboard:dashboard' %}"
+                   style="flex:1; padding:0.875rem; text-align:center; background:white; border:2px solid #e5e7eb; border-radius:0.5rem; font-weight:600; text-decoration:none; color:#374151;">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        style="flex:2; padding:0.875rem; background:#38bdf8; color:white; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer; font-size:1rem;">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Info card -->
+    <div style="background:white; border-radius:1rem; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-top:1.5rem;">
+        <h3 style="font-weight:700; color:#0f172a; margin-bottom:1rem; font-size:0.875rem;">
+            <i class="bi bi-info-circle"></i> Información de la Cuenta
+        </h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.875rem;">
+            <div>
+                <span style="color:#6b7280;">Miembro desde:</span><br>
+                <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
+            </div>
+            <div>
+                <span style="color:#6b7280;">Último acceso:</span><br>
+                <strong>{{ user.last_login|date:"d/m/Y H:i" }}</strong>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

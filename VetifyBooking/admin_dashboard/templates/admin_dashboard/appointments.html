@@ -1,0 +1,272 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Gestión de Citas - Vetify Admin{% endblock %}
+{% block page_title %}Gestión de Citas{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters-bar {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 0.5rem; }
+    .filter-label { font-size: 0.875rem; font-weight: 600; color: #374151; }
+    .filter-input { padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; }
+    .filter-input:focus { outline: none; border-color: #38bdf8; }
+    .btn { padding: 0.625rem 1.25rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 0.875rem; }
+    .btn-primary { background: #38bdf8; color: white; }
+    .btn-primary:hover { background: #0284c7; }
+    .table-container { background: white; border-radius: 1rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .table-title { font-size: 1.25rem; font-weight: 700; color: #0f172a; }
+    .table-count { color: #6b7280; font-size: 0.875rem; }
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table thead { background: #f9fafb; }
+    .data-table th { padding: 0.75rem 1rem; text-align: left; font-size: 0.875rem; font-weight: 600; color: #374151; border-bottom: 1px solid #e5e7eb; }
+    .data-table td { padding: 1rem; border-bottom: 1px solid #f3f4f6; font-size: 0.875rem; }
+    .data-table tbody tr:hover { background: #f9fafb; }
+    .badge { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+    .badge-pending { background: #fef9c3; color: #854d0e; }
+    .badge-confirmed { background: #dbeafe; color: #1e40af; }
+    .badge-completed { background: #d1fae5; color: #065f46; }
+    .badge-cancelled { background: #fee2e2; color: #991b1b; }
+    .action-btn { padding: 0.375rem 0.75rem; border: none; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; }
+    .btn-delete { background: #fee2e2; color: #991b1b; }
+    .btn-delete:hover { background: #fecaca; }
+    .empty-state { text-align: center; padding: 3rem; color: #9ca3af; }
+    .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .status-select { padding: 0.375rem 0.625rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.75rem; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Filters -->
+<div class="filters-bar">
+    <form method="GET">
+        <div class="filters-grid">
+            <div class="filter-group">
+                <label class="filter-label">Estado</label>
+                <select name="status" class="filter-input">
+                    <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Todas</option>
+                    <option value="today" {% if status_filter == 'today' %}selected{% endif %}>Hoy</option>
+                    <option value="upcoming" {% if status_filter == 'upcoming' %}selected{% endif %}>Próximas</option>
+                    <option value="past" {% if status_filter == 'past' %}selected{% endif %}>Pasadas</option>
+                    <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pendientes</option>
+                    <option value="confirmed" {% if status_filter == 'confirmed' %}selected{% endif %}>Confirmadas</option>
+                    <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completadas</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Fecha</label>
+                <input type="date" name="date" class="filter-input" value="{{ date_filter }}">
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Buscar</label>
+                <input type="text" name="search" class="filter-input" placeholder="Usuario, mascota..." value="{{ search }}">
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Filtrar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="table-container">
+    <div class="table-header">
+        <div>
+            <h2 class="table-title"><i class="bi bi-calendar2-check"></i> Listado de Citas</h2>
+            <p class="table-count">{{ total_count }} cita{{ total_count|pluralize }}</p>
+        </div>
+        <button onclick="document.getElementById('modalCrearCita').style.display='flex'" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nueva Cita
+        </button>
+    </div>
+
+    {% if appointments %}
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Mascota</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Servicio</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for apt in appointments %}
+            <tr>
+                <td style="color:#6b7280;">#{{ apt.id }}</td>
+                <td>
+                    <strong>{{ apt.user.username }}</strong><br>
+                    <small style="color:#6b7280;">{{ apt.user.email }}</small>
+                </td>
+                <td>{{ apt.pet.name }}</td>
+                <td>{{ apt.date|date:"d/m/Y" }}</td>
+                <td>{{ apt.time|time:"H:i" }}</td>
+                <td>{{ apt.service.name|default:"Sin servicio" }}</td>
+                <td>
+                    <span class="badge badge-{{ apt.status }}">
+                        {{ apt.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+
+                        <!-- Cambiar estado -->
+                        <form method="POST" action="{% url 'admin_dashboard:change_appointment_status' apt.id %}" style="display:flex; gap:0.25rem;">
+                            {% csrf_token %}
+                            <select name="status" class="status-select">
+                                <option value="pending" {% if apt.status == 'pending' %}selected{% endif %}>Pendiente</option>
+                                <option value="confirmed" {% if apt.status == 'confirmed' %}selected{% endif %}>Confirmada</option>
+                                <option value="completed" {% if apt.status == 'completed' %}selected{% endif %}>Completada</option>
+                                <option value="cancelled" {% if apt.status == 'cancelled' %}selected{% endif %}>Cancelada</option>
+                            </select>
+                            <button type="submit" class="action-btn" style="background:#dbeafe; color:#1e40af;">
+                                <i class="bi bi-check"></i>
+                            </button>
+                        </form>
+
+                        <!-- Eliminar -->
+                        <a href="{% url 'admin_dashboard:delete_appointment' apt.id %}"
+                           class="action-btn btn-delete"
+                           onclick="return confirm('¿Eliminar esta cita?')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                        <!-- Botón consulta (solo si está completada y no tiene consulta) -->
+                        {% if apt.status == 'completed' %}
+                            {% if apt.consultation %}
+                            <a href="{% url 'admin_dashboard:edit_consultation' apt.consultation.id %}"
+                            class="action-btn" style="background:#d1fae5; color:#065f46;">
+                                <i class="bi bi-file-medical"></i> Ver Consulta
+                            </a>
+                            {% else %}
+                            <a href="{% url 'admin_dashboard:add_consultation' %}?appointment={{ apt.id }}"
+                            class="action-btn" style="background:#f0fdf4; color:#15803d;">
+                                <i class="bi bi-plus-circle"></i> Consulta
+                            </a>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-calendar-x"></i></div>
+        <h3>No hay citas</h3>
+        <p>No se encontraron citas con los filtros seleccionados</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Nueva Cita -->
+<div id="modalCrearCita" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:560px; max-height:90vh; overflow-y:auto; margin:1rem;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;">
+                <i class="bi bi-calendar-plus"></i> Nueva Cita
+            </h2>
+            <button onclick="document.getElementById('modalCrearCita').style.display='none'"
+                    style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#6b7280;">✕</button>
+        </div>
+
+        <form method="POST" action="{% url 'admin_dashboard:create_appointment_admin' %}">
+            {% csrf_token %}
+
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Usuario *</label>
+                    <select name="user" required class="filter-input" id="userSelect" onchange="filterPets()">
+                        <option value="">Seleccionar usuario...</option>
+                        {% for u in users %}
+                        <option value="{{ u.id }}">{{ u.username }} — {{ u.get_full_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Mascota *</label>
+                    <select name="pet" required class="filter-input" id="petSelect">
+                        <option value="">Primero selecciona un usuario...</option>
+                        {% for pet in pets %}
+                        <option value="{{ pet.id }}" data-owner="{{ pet.owner.id }}">{{ pet.name }} ({{ pet.owner.username }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Servicio *</label>
+                    <select name="service" required class="filter-input">
+                        {% for service in services %}
+                        <option value="{{ service.id }}">{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Fecha *</label>
+                        <input type="date" name="date" required class="filter-input">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora *</label>
+                        <input type="time" name="time" required class="filter-input">
+                    </div>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Notas</label>
+                    <textarea name="notes" rows="2" class="filter-input" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+
+            </div>
+
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" onclick="document.getElementById('modalCrearCita').style.display='none'"
+                        class="btn" style="flex:1; background:white; border:2px solid #e5e7eb; color:#374151;">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">
+                    <i class="bi bi-calendar-check"></i> Crear Cita
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function filterPets() {
+    const userId = document.getElementById('userSelect').value;
+    const petSelect = document.getElementById('petSelect');
+    const options = petSelect.querySelectorAll('option');
+
+    options.forEach(opt => {
+        if (!opt.value) return;
+        opt.style.display = opt.dataset.owner === userId ? '' : 'none';
+    });
+
+    petSelect.value = '';
+}
+</script>
+
+{% endblock %}

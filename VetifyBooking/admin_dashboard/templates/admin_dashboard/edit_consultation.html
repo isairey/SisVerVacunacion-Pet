@@ -1,0 +1,92 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Editar Consulta - Vetify Admin{% endblock %}
+{% block page_title %}Editar Consulta Médica{% endblock %}
+
+{% block content %}
+<div style="max-width:900px; margin:0 auto;">
+    <div style="background:white; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+        <!-- Info no editable -->
+        <div style="background:#f0f9ff; border-radius:0.75rem; padding:1rem; margin-bottom:1.5rem; font-size:0.875rem; color:#374151;">
+            <strong><i class="bi bi-info-circle"></i> Cita:</strong>
+            {{ consultation.appointment.date|date:"d/m/Y" }} · {{ consultation.appointment.pet.name }} · {{ consultation.appointment.user.get_full_name|default:consultation.appointment.user.username }}
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Veterinario</label>
+                <select name="veterinarian" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                    <option value="">Sin asignar</option>
+                    {% for vet in veterinarians %}
+                    <option value="{{ vet.id }}" {% if consultation.veterinarian.id == vet.id %}selected{% endif %}>
+                        Dr(a). {{ vet.name }} - {{ vet.get_specialty_display }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div>
+                    <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Peso en visita (kg)</label>
+                    <input type="number" step="0.01" name="weight_at_visit" value="{{ consultation.weight_at_visit|default:'' }}"
+                           style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div>
+                    <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Temperatura (°C)</label>
+                    <input type="number" step="0.1" name="temperature" value="{{ consultation.temperature|default:'' }}"
+                           style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Motivo de consulta *</label>
+                <input type="text" name="reason" required value="{{ consultation.reason }}"
+                       style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Síntomas observados *</label>
+                <textarea name="symptoms" required rows="3"
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;">{{ consultation.symptoms }}</textarea>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Diagnóstico *</label>
+                <textarea name="diagnosis" required rows="3"
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;">{{ consultation.diagnosis }}</textarea>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Tratamiento indicado *</label>
+                <textarea name="treatment" required rows="3"
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;">{{ consultation.treatment }}</textarea>
+            </div>
+
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Notas adicionales</label>
+                <textarea name="notes" rows="2"
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;">{{ consultation.notes }}</textarea>
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Próxima visita</label>
+                <input type="date" name="next_visit" value="{{ consultation.next_visit|date:'Y-m-d'|default:'' }}"
+                       style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+                <a href="{% url 'admin_dashboard:consultations' %}"
+                   style="flex:1; padding:0.875rem; text-align:center; background:white; border:2px solid #e5e7eb; border-radius:0.5rem; font-weight:600; text-decoration:none; color:#374151;">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        style="flex:2; padding:0.875rem; background:#0284c7; color:white; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer; font-size:1rem;">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

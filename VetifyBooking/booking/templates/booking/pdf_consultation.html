@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * { margin: 0; padding: 0; }
+        body { font-family: Helvetica, Arial, sans-serif; font-size: 12px; color: #1a1a1a; }
+
+        .header {
+            background-color: #0284c7;
+            color: white;
+            padding: 20px 28px;
+        }
+        .header h1 { font-size: 20px; font-weight: bold; margin-bottom: 4px; }
+        .header p { font-size: 10px; }
+
+        .header-table { width: 100%; }
+        .header-right { text-align: right; font-size: 10px; color: white; }
+
+        .body { padding: 24px 28px; }
+
+        .section { margin-bottom: 16px; border: 1px solid #e5e7eb; }
+        .section-title {
+            background-color: #f0f9ff;
+            padding: 8px 14px;
+            font-weight: bold;
+            color: #0284c7;
+            font-size: 11px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .section-body { padding: 12px 14px; }
+
+        .field { margin-bottom: 8px; }
+        .field-label { font-weight: bold; color: #374151; font-size: 10px; text-transform: uppercase; }
+        .field-value { color: #1f2937; font-size: 12px; margin-top: 2px; }
+
+        .vital-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            text-align: center;
+        }
+        .vital-value { font-size: 18px; font-weight: bold; color: #0284c7; }
+        .vital-label { font-size: 10px; color: #6b7280; margin-top: 2px; }
+
+        .next-visit {
+            background-color: #dbeafe;
+            padding: 8px 12px;
+            color: #1e40af;
+            font-weight: bold;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+
+        .footer-table { width: 100%; margin-top: 28px; border-top: 2px solid #e5e7eb; padding-top: 14px; }
+        .signature-line {
+            border-top: 1px solid #374151;
+            width: 180px;
+            padding-top: 4px;
+            font-size: 10px;
+            color: #6b7280;
+            text-align: center;
+        }
+        .stamp { font-size: 10px; color: #9ca3af; text-align: right; }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <table class="header-table">
+        <tr>
+            <td>
+                <h1>Vetify — Consulta Medica</h1>
+                <p>Registro clinico veterinario oficial</p>
+            </td>
+            <td class="header-right">
+                Folio: #{{ consultation.id|stringformat:"05d" }}<br>
+                Fecha: {{ consultation.appointment.date|date:"d/m/Y" }}<br>
+                Hora: {{ consultation.appointment.time|time:"H:i" }}
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div class="body">
+
+    <!-- DATOS DEL PACIENTE -->
+    <div class="section">
+        <div class="section-title">Datos del Paciente</div>
+        <div class="section-body">
+            <table width="100%">
+                <tr>
+                    <td width="50%" valign="top">
+                        <div class="field">
+                            <div class="field-label">Nombre</div>
+                            <div class="field-value">{{ consultation.appointment.pet.name }}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Especie / Raza</div>
+                            <div class="field-value">{{ consultation.appointment.pet.get_pet_type_display }} / {{ consultation.appointment.pet.breed|default:"No especificada" }}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Color</div>
+                            <div class="field-value">{{ consultation.appointment.pet.color|default:"No especificado" }}</div>
+                        </div>
+                    </td>
+                    <td width="50%" valign="top">
+                        <div class="field">
+                            <div class="field-label">Edad</div>
+                            <div class="field-value">{{ consultation.appointment.pet.age }} año{{ consultation.appointment.pet.age|pluralize }}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Estado de vacunacion</div>
+                            <div class="field-value">{{ consultation.appointment.pet.get_vaccination_status_display }}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Propietario</div>
+                            <div class="field-value">{{ consultation.appointment.user.get_full_name|default:consultation.appointment.user.username }}</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- SIGNOS VITALES -->
+    <div class="section">
+        <div class="section-title">Signos Vitales</div>
+        <div class="section-body">
+            <table width="100%">
+                <tr>
+                    <td width="33%" style="padding-right:8px;">
+                        <div class="vital-box">
+                            <div class="vital-value">{{ consultation.weight_at_visit|default:"--" }}{% if consultation.weight_at_visit %} kg{% endif %}</div>
+                            <div class="vital-label">Peso</div>
+                        </div>
+                    </td>
+                    <td width="33%" style="padding-right:8px;">
+                        <div class="vital-box">
+                            <div class="vital-value">{{ consultation.temperature|default:"--" }}{% if consultation.temperature %}C{% endif %}</div>
+                            <div class="vital-label">Temperatura</div>
+                        </div>
+                    </td>
+                    <td width="33%">
+                        <div class="vital-box">
+                            <div class="vital-value" style="font-size:13px;">{{ consultation.appointment.get_service_display }}</div>
+                            <div class="vital-label">Tipo de servicio</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- INFORMACIÓN CLÍNICA -->
+    <div class="section">
+        <div class="section-title">Informacion Clinica</div>
+        <div class="section-body">
+            <div class="field">
+                <div class="field-label">Motivo de consulta</div>
+                <div class="field-value">{{ consultation.reason }}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Sintomas observados</div>
+                <div class="field-value">{{ consultation.symptoms }}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Diagnostico</div>
+                <div class="field-value">{{ consultation.diagnosis }}</div>
+            </div>
+            <div class="field">
+                <div class="field-label">Tratamiento indicado</div>
+                <div class="field-value">{{ consultation.treatment }}</div>
+            </div>
+            {% if consultation.notes %}
+            <div class="field">
+                <div class="field-label">Notas adicionales</div>
+                <div class="field-value">{{ consultation.notes }}</div>
+            </div>
+            {% endif %}
+            {% if consultation.next_visit %}
+            <div class="next-visit">
+                Proxima visita recomendada: {{ consultation.next_visit|date:"d/m/Y" }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- VETERINARIO -->
+    {% if consultation.veterinarian %}
+    <div class="section">
+        <div class="section-title">Medico Veterinario</div>
+        <div class="section-body">
+            <table width="100%">
+                <tr>
+                    <td width="50%" valign="top">
+                        <div class="field">
+                            <div class="field-label">Nombre</div>
+                            <div class="field-value">Dr(a). {{ consultation.veterinarian.name }}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Especialidad</div>
+                            <div class="field-value">{{ consultation.veterinarian.get_specialty_display }}</div>
+                        </div>
+                    </td>
+                    <td width="50%" valign="top">
+                        <div class="field">
+                            <div class="field-label">Cedula profesional</div>
+                            <div class="field-value">{{ consultation.veterinarian.license_number }}</div>
+                        </div>
+                        <div class="field">
+                            <div class="field-label">Correo</div>
+                            <div class="field-value">{{ consultation.veterinarian.email }}</div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FIRMA -->
+    <table class="footer-table">
+        <tr>
+            <td valign="bottom">
+                <div class="signature-line">Firma del Medico Veterinario</div>
+            </td>
+            <td class="stamp" valign="bottom">
+                Documento generado por Vetify<br>
+                {{ consultation.created_at|date:"d/m/Y H:i" }}
+            </td>
+        </tr>
+    </table>
+
+</div>
+</body>
+</html>

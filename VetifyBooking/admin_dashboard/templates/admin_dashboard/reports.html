@@ -1,0 +1,387 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}
+    Reportes - Vetify Admin
+{% endblock %}
+
+{% block page_title %}
+    Reportes y Estadísticas
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Period Selector */
+    .period-selector {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .period-buttons {
+        display: flex;
+        gap: .5rem;
+        flex-wrap: wrap;
+    }
+
+    .period-btn {
+        padding: .625rem 1.25rem;
+        border: 2px solid #e5e7eb;
+        background: white;
+        border-radius: .5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: .3s;
+        text-decoration: none;
+        color: #4b5563;
+        font-size: .875rem;
+    }
+
+    .period-btn:hover {
+        border-color: #38bdf8;
+        color: #0284c7;
+    }
+
+    .period-btn.active {
+        background: #38bdf8;
+        border-color: #38bdf8;
+        color: white;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: .3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    .stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+    }
+
+    .stat-icon-blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%) }
+    .stat-icon-green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%) }
+    .stat-icon-purple { background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%) }
+
+    .stat-value {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: .875rem;
+    }
+
+    .stat-period {
+        font-size: .75rem;
+        color: #9ca3af;
+        margin-top: .5rem;
+    }
+
+    /* Charts */
+    .charts-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .chart-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .chart-subtitle {
+        font-size: .875rem;
+        color: #6b7280;
+    }
+
+    .chart-canvas {
+        height: 300px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        gap: .75rem;
+        padding: 1rem 0;
+    }
+
+    .chart-bar-wrapper {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+    }
+
+    .chart-bar {
+        width: 100%;
+        background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+        border-radius: .5rem .5rem 0 0;
+        min-height: 20px;
+        position: relative;
+        margin-top: auto;
+    }
+
+    .chart-bar-value {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: .75rem;
+        font-weight: 600;
+    }
+
+    .chart-bar-label {
+        margin-top: .5rem;
+        font-size: .75rem;
+        color: #6b7280;
+    }
+
+    /* Ranking */
+    .rank-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .rank-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: .75rem;
+    }
+
+    .rank-number {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+    }
+
+    .rank-info { flex: 1 }
+
+    .rank-name { font-weight: 600; }
+
+    .rank-email {
+        font-size: .75rem;
+        color: #6b7280;
+    }
+
+    .rank-value {
+        font-weight: 700;
+        color: #0284c7;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #9ca3af;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="period-selector">
+        <div class="period-buttons">
+            <a href="?period=7" class="period-btn {% if period == '7' %}active{% endif %}">
+                <i class="bi bi-calendar"></i> Últimos 7 días
+            </a>
+            <a href="?period=30" class="period-btn {% if period == '30' %}active{% endif %}">
+                <i class="bi bi-calendar"></i> Últimos 30 días
+            </a>
+            <a href="?period=90" class="period-btn {% if period == '90' %}active{% endif %}">
+                <i class="bi bi-calendar"></i> Últimos 90 días
+            </a>
+            <a href="?period=365" class="period-btn {% if period == '365' %}active{% endif %}">
+                <i class="bi bi-calendar"></i> Último año
+            </a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-value">{{ total_appointments }}</div>
+                    <div class="stat-label">Citas en el Período</div>
+                    <div class="stat-period">
+                        {{ start_date|date:"d M Y" }} - {{ end_date|date:"d M Y" }}
+                    </div>
+                </div>
+                <div class="stat-icon stat-icon-blue">
+                    <i class="bi bi-calendar"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-value">{{ new_users }}</div>
+                    <div class="stat-label">Nuevos Usuarios</div>
+                    <div class="stat-period">Registrados en el período</div>
+                </div>
+                <div class="stat-icon stat-icon-green">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-value">{{ new_pets }}</div>
+                    <div class="stat-label">Nuevas Mascotas</div>
+                    <div class="stat-period">Registradas en el período</div>
+                </div>
+                <div class="stat-icon stat-icon-purple">
+                    <i class="bi bi-heart"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-grid">
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title"><i class="bi bi-bar-chart"></i> Citas por Mes</h3>
+                <p class="chart-subtitle">Últimos 6 meses</p>
+            </div>
+            <div class="chart-canvas" id="monthlyChart"></div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3 class="chart-title"><i class="bi bi-trophy"></i> Top Usuarios</h3>
+                <p class="chart-subtitle">Por número de citas</p>
+            </div>
+
+            {% if top_users %}
+                <div class="rank-list">
+                    {% for user in top_users %}
+                        <div class="rank-item">
+                            <div class="rank-number">{{ forloop.counter }}</div>
+                            <div class="rank-info">
+                                <div class="rank-name">{{ user.username }}</div>
+                                <div class="rank-email">{{ user.email }}</div>
+                            </div>
+                            <div class="rank-value">{{ user.appointments_count }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">No hay datos disponibles</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="table-card" style="background:white; border-radius:1rem; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <h3 class="table-title" style="margin-bottom:1.5rem; font-weight:700;">
+            <i class="bi bi-bandaid"></i> Servicios Disponibles
+        </h3>
+
+        {% if service_stats %}
+            <div class="rank-list">
+                {% for service in service_stats %}
+                    <div class="rank-item">
+                        <div style="font-size:1.5rem;">{{ service.icon }}</div>
+                        <div class="rank-info">
+                            <div class="rank-name">{{ service.name }}</div>
+                            <div class="rank-email">
+                                <i class="bi bi-clock"></i> {{ service.duration }} min |
+                                <i class="bi bi-cash"></i> ${{ service.price }}
+                            </div>
+                        </div>
+                        <div class="rank-value">
+                            {% if service.is_active %}
+                                <span style="background:#d1fae5; color:#065f46; padding:.25rem .75rem; border-radius:9999px; font-size:.75rem;">
+                                    <i class="bi bi-check-circle"></i> Activo
+                                </span>
+                            {% else %}
+                                <span style="background:#fee2e2; color:#991b1b; padding:.25rem .75rem; border-radius:9999px; font-size:.75rem;">
+                                    <i class="bi bi-x-circle"></i> Inactivo
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">No hay servicios registrados</div>
+        {% endif %}
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const monthlyData = {{ appointments_by_month|safe }};
+    const chartContainer = document.getElementById('monthlyChart');
+
+    if (monthlyData && monthlyData.length > 0) {
+        const maxValue = Math.max(...monthlyData.map(d => d.count), 1);
+
+        chartContainer.innerHTML = monthlyData.map(data => {
+            const height = (data.count / maxValue) * 100;
+            return `
+                <div class="chart-bar-wrapper">
+                    <div class="chart-bar" style="height:${height}%">
+                        <div class="chart-bar-value">${data.count}</div>
+                    </div>
+                    <div class="chart-bar-label">${data.month}</div>
+                </div>
+            `;
+        }).join('');
+    }
+</script>
+{% endblock %}

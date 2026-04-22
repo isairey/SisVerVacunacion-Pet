@@ -1,0 +1,240 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Gestión de Horarios - Vetify Admin{% endblock %}
+{% block page_title %}Gestión de Horarios{% endblock %}
+
+{% block extra_css %}
+<style>
+    .intro-card { background:linear-gradient(135deg,#38bdf8 0%,#0284c7 100%); color:white; border-radius:1rem; padding:2rem; margin-bottom:2rem; box-shadow:0 4px 12px rgba(56,189,248,0.3); }
+    .intro-card h2 { font-size:1.5rem; margin-bottom:0.5rem; }
+    .stats-summary { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:1rem; margin-bottom:2rem; }
+    .stat-box { background:white; border-radius:0.75rem; padding:1.25rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); display:flex; align-items:center; gap:1rem; }
+    .stat-icon { width:56px; height:56px; border-radius:0.75rem; display:flex; align-items:center; justify-content:center; font-size:1.75rem; }
+    .stat-icon-blue { background:#dbeafe; }
+    .stat-icon-green { background:#d1fae5; }
+    .stat-value { font-size:1.75rem; font-weight:700; color:#0f172a; }
+    .stat-label { font-size:0.75rem; color:#6b7280; }
+    .schedule-container { background:white; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    .schedule-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; padding-bottom:1rem; border-bottom:2px solid #e5e7eb; }
+    .schedule-title { font-size:1.25rem; font-weight:700; color:#0f172a; }
+    .schedule-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; }
+    .day-card { background:linear-gradient(135deg,#f0f9ff 0%,#ffffff 100%); border:2px solid #bae6fd; border-radius:1rem; padding:1.5rem; transition:all 0.3s; }
+    .day-card:hover { border-color:#38bdf8; box-shadow:0 4px 12px rgba(56,189,248,0.2); }
+    .day-card.closed { background:linear-gradient(135deg,#f9fafb 0%,#ffffff 100%); border-color:#d1d5db; opacity:0.7; }
+    .day-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; padding-bottom:1rem; border-bottom:1px solid #e0f2fe; }
+    .day-name { font-size:1.25rem; font-weight:700; color:#0284c7; }
+    .day-status { padding:0.25rem 0.75rem; border-radius:9999px; font-size:0.75rem; font-weight:600; }
+    .status-open { background:#d1fae5; color:#065f46; }
+    .status-closed { background:#fee2e2; color:#991b1b; }
+    .time-info { display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem; }
+    .time-icon { width:48px; height:48px; background:linear-gradient(135deg,#dbeafe,#bfdbfe); border-radius:0.75rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem; flex-shrink:0; }
+    .time-label { font-size:0.75rem; color:#6b7280; margin-bottom:0.25rem; }
+    .time-value { font-size:1.125rem; font-weight:700; color:#0f172a; }
+    .day-actions { display:flex; gap:0.5rem; padding-top:1rem; border-top:1px solid #e0f2fe; margin-top:0.5rem; }
+    .action-btn { flex:1; padding:0.5rem; border:none; border-radius:0.375rem; font-size:0.75rem; font-weight:600; cursor:pointer; text-decoration:none; text-align:center; display:inline-block; }
+    .btn-edit { background:#dbeafe; color:#1e40af; }
+    .btn { padding:0.625rem 1.25rem; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer; font-size:0.875rem; }
+    .btn-primary { background:#38bdf8; color:white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="intro-card">
+    <h2><i class="bi bi-clock"></i> Horarios de Atención</h2>
+    <p>Gestiona los horarios de apertura y cierre de la clínica veterinaria</p>
+</div>
+
+<div class="stats-summary">
+    <div class="stat-box">
+        <div class="stat-icon stat-icon-blue"><i class="bi bi-calendar"></i></div>
+        <div>
+            <div class="stat-value">{{ clinic_schedules|length }}</div>
+            <div class="stat-label">Días configurados</div>
+        </div>
+    </div>
+    <div class="stat-box">
+        <div class="stat-icon stat-icon-green"><i class="bi bi-check-circle"></i></div>
+        <div>
+            <div class="stat-value">{{ open_days }}</div>
+            <div class="stat-label">Días abiertos</div>
+        </div>
+    </div>
+</div>
+
+<div class="schedule-container">
+    <div class="schedule-header">
+        <div>
+            <h2 class="schedule-title"><i class="bi bi-card-list"></i> Horarios por Día</h2>
+        </div>
+        <button onclick="document.getElementById('modalCrearHorario').style.display='flex'" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Agregar Día
+        </button>
+    </div>
+
+    {% if clinic_schedules %}
+    <div class="schedule-grid">
+        {% for schedule in clinic_schedules %}
+        <div class="day-card {% if not schedule.is_open %}closed{% endif %}">
+            <div class="day-header">
+                <h3 class="day-name">{{ schedule.get_day_of_week_display }}</h3>
+                <span class="day-status {% if schedule.is_open %}status-open{% else %}status-closed{% endif %}">
+                    {% if schedule.is_open %}<i class="bi bi-check"></i> Abierto{% else %}<i class="bi bi-x"></i> Cerrado{% endif %}
+                </span>
+            </div>
+
+            {% if schedule.is_open %}
+            <div class="time-info">
+                <div class="time-icon"><i class="bi bi-sunrise"></i></div>
+                <div>
+                    <div class="time-label">Apertura</div>
+                    <div class="time-value">{{ schedule.opening_time|time:"H:i" }}</div>
+                </div>
+            </div>
+            <div class="time-info">
+                <div class="time-icon"><i class="bi bi-sunset"></i></div>
+                <div>
+                    <div class="time-label">Cierre</div>
+                    <div class="time-value">{{ schedule.closing_time|time:"H:i" }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align:center; padding:1.5rem; color:#9ca3af;">
+                <i class="bi bi-lock" style="font-size:2rem;"></i>
+                <p style="margin-top:0.5rem; font-size:0.875rem;">Cerrado este día</p>
+            </div>
+            {% endif %}
+
+            {% if schedule.notes %}
+            <div style="background:#fffbeb; border-left:3px solid #f59e0b; padding:0.75rem; border-radius:0.5rem; font-size:0.875rem; color:#78350f; margin-bottom:0.5rem;">
+                {{ schedule.notes }}
+            </div>
+            {% endif %}
+
+            <div class="day-actions">
+                <button onclick="openEditSchedule({{ schedule.id }}, {{ schedule.is_open|yesno:'true,false' }}, '{{ schedule.opening_time|time:"H:i" }}', '{{ schedule.closing_time|time:"H:i" }}', '{{ schedule.notes|escapejs }}')"
+                        class="action-btn btn-edit">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:3rem; color:#9ca3af;">
+        <div style="font-size:3rem; margin-bottom:1rem;"><i class="bi bi-calendar"></i></div>
+        <h3>No hay horarios configurados</h3>
+        <p>Agrega el primero con el botón de arriba</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Crear Horario -->
+<div id="modalCrearHorario" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:480px; margin:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;"><i class="bi bi-plus-circle"></i> Agregar Horario</h2>
+            <button onclick="document.getElementById('modalCrearHorario').style.display='none'"
+                    style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#6b7280;">✕</button>
+        </div>
+        <form method="POST" action="{% url 'admin_dashboard:create_schedule' %}">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Día *</label>
+                    <select name="day_of_week" required style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                        <option value="monday">Lunes</option>
+                        <option value="tuesday">Martes</option>
+                        <option value="wednesday">Miércoles</option>
+                        <option value="thursday">Jueves</option>
+                        <option value="friday">Viernes</option>
+                        <option value="saturday">Sábado</option>
+                        <option value="sunday">Domingo</option>
+                    </select>
+                </div>
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <input type="checkbox" name="is_open" id="createIsOpen" checked style="width:18px; height:18px;">
+                    <label for="createIsOpen" style="font-weight:600; color:#374151; cursor:pointer;">Abierto este día</label>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora apertura</label>
+                        <input type="time" name="opening_time" value="09:00"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora cierre</label>
+                        <input type="time" name="closing_time" value="17:00"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Notas</label>
+                    <input type="text" name="notes" placeholder="ej: Horario reducido en festivos"
+                           style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" onclick="document.getElementById('modalCrearHorario').style.display='none'"
+                        class="btn" style="flex:1; background:white; border:2px solid #e5e7eb; color:#374151;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Horario -->
+<div id="modalEditarHorario" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:480px; margin:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;"><i class="bi bi-pencil"></i> Editar Horario</h2>
+            <button onclick="document.getElementById('modalEditarHorario').style.display='none'"
+                    style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#6b7280;">✕</button>
+        </div>
+        <form method="POST" id="formEditarHorario" action="">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <input type="checkbox" name="is_open" id="editIsOpen" style="width:18px; height:18px;">
+                    <label for="editIsOpen" style="font-weight:600; color:#374151; cursor:pointer;">Abierto este día</label>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora apertura</label>
+                        <input type="time" name="opening_time" id="editOpenTime"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora cierre</label>
+                        <input type="time" name="closing_time" id="editCloseTime"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Notas</label>
+                    <input type="text" name="notes" id="editNotes"
+                           style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" onclick="document.getElementById('modalEditarHorario').style.display='none'"
+                        class="btn" style="flex:1; background:white; border:2px solid #e5e7eb; color:#374151;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditSchedule(id, isOpen, openTime, closeTime, notes) {
+    document.getElementById('editIsOpen').checked = isOpen;
+    document.getElementById('editOpenTime').value = openTime;
+    document.getElementById('editCloseTime').value = closeTime;
+    document.getElementById('editNotes').value = notes;
+    document.getElementById('formEditarHorario').action = `/dashboard/schedules/${id}/edit/`;
+    document.getElementById('modalEditarHorario').style.display = 'flex';
+}
+</script>
+{% endblock %}

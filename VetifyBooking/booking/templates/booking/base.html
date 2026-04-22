@@ -1,0 +1,201 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Vetify Booking{% endblock %}</title>
+
+    <!-- CSS principal -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <!-- Flatpickr -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+{% if user.is_authenticated %}
+
+<header class="header">
+    <div class="container">
+        <div class="header-content">
+
+            <!-- Logo -->
+            <a href="{% url 'home' %}" class="logo">
+                <img src="{% static 'images/vetify-logo.png' %}" alt="Vetify Logo">
+            </a>
+
+            <!-- Navegación -->
+            <nav class="nav">
+
+                <a href="{% url 'home' %}" class="nav-link">
+                    <i class="bi bi-house-door"></i>
+                    <span>Inicio</span>
+                </a>
+
+                <a href="{% url 'veterinarians' %}" class="nav-link">
+                    <i class="bi bi-person-badge"></i>
+                    <span>Veterinarios</span>
+                </a>
+
+                <a href="{% url 'services_schedules' %}" class="nav-link">
+                    <i class="bi bi-clock"></i>
+                    <span> Servicios y Horarios</span>
+                </a>
+
+                <a href="{% url 'booking' %}" class="nav-link">
+                    <i class="bi bi-calendar-check"></i>
+                    <span>Reservar Cita</span>
+                </a>
+
+                <a href="{% url 'appointments' %}" class="nav-link">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Mis Citas</span>
+                </a>
+
+                <a href="{% url 'medical_history' %}" class="nav-link">
+                    <i class="bi bi-file-medical"></i>
+                    <span>Historial Médico</span>
+                </a>
+
+                <!-- PERFIL -->
+                <div class="user-info">
+                    <a href="{% url 'profile' %}"
+                    style="display:flex; align-items:center; gap:0.75rem; text-decoration:none;">
+                        
+                        <div class="user-avatar">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}">
+                            {% else %}
+                                {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                            {% endif %}
+                        </div>
+
+                        <span class="user-name">
+                            {{ user.get_full_name|default:user.username }}
+                        </span>
+                    </a>
+                </div>
+
+                {% if user.is_superuser %}
+                <a href="{% url 'admin_dashboard:dashboard' %}" class="nav-link admin-link">
+                    <i class="bi bi-gear-fill"></i>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'logout' %}" class="nav-link logout">
+                    <i class="bi bi-box-arrow-right"></i>
+                </a>
+
+            </nav>
+
+        </div>
+    </div>
+</header>
+
+{% endif %}
+
+<!-- Mensajes del sistema -->
+{% if messages %}
+<div class="messages-container">
+    {% for message in messages %}
+    <div class="message message-{{ message.tags }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Contenido principal -->
+<main>
+    {% block content %}{% endblock %}
+</main>
+
+{% if user.is_authenticated %}
+
+<footer class="footer">
+    <div class="container">
+
+        <div class="footer-grid">
+
+            <div>
+                <div class="footer-logo">
+                    <img src="{% static 'images/vetify-logo.png' %}" alt="Vetify Logo">
+                </div>
+
+                <p class="footer-text">
+                    Brindamos atención veterinaria de calidad con amor y compromiso
+                    para el bienestar de tus mascotas.
+                </p>
+            </div>
+
+            <div>
+                <h4>Contacto</h4>
+
+                <p class="footer-text">
+                    <i class="bi bi-telephone"></i> (555) 123-4567
+                </p>
+
+                <p class="footer-text">
+                    <i class="bi bi-envelope"></i> info@vetify.vet
+                </p>
+
+                <p class="footer-text">
+                    <i class="bi bi-geo-alt"></i> 123 Pet Lane, Tijuana
+                </p>
+            </div>
+
+            <div>
+                <h4>Horario</h4>
+
+                <p class="footer-text">Lunes - Viernes: 9:00 AM - 5:00 PM</p>
+                <p class="footer-text">Sábado: 9:00 AM - 3:00 PM</p>
+                <p class="footer-text">Domingo: Cerrado</p>
+            </div>
+
+        </div>
+
+        <div class="footer-bottom">
+            <p>© 2026 Vetify Booking. Todos los derechos reservados.</p>
+        </div>
+
+    </div>
+</footer>
+
+{% endif %}
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function() {
+
+    flatpickr("#id_date", {
+        minDate: "today",
+        dateFormat: "Y-m-d",
+        disableMobile: true
+    });
+
+    flatpickr("#id_time", {
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "H:i",
+        time_24hr: true
+    });
+
+});
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

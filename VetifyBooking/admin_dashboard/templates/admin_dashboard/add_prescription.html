@@ -1,0 +1,121 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Nueva Receta - Vetify Admin{% endblock %}
+{% block page_title %}Nueva Receta Médica{% endblock %}
+
+{% block content %}
+<div style="max-width:900px; margin:0 auto;">
+
+    <!-- Info de la consulta -->
+    <div style="background:linear-gradient(135deg,#0284c7,#0369a1); color:white; border-radius:1rem; padding:1.5rem; margin-bottom:1.5rem;">
+        <h3 style="font-weight:700; margin-bottom:0.5rem;"><i class="bi bi-file-medical"></i> Receta para consulta del {{ consultation.appointment.date|date:"d/m/Y" }}</h3>
+        <p style="opacity:0.9;">Mascota: <strong>{{ consultation.appointment.pet.name }}</strong> · Dueño: <strong>{{ consultation.appointment.user.get_full_name|default:consultation.appointment.user.username }}</strong></p>
+    </div>
+
+    <div style="background:white; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+        <form method="POST">
+            {% csrf_token %}
+
+            <!-- Medicamentos -->
+            <div style="margin-bottom:1.5rem;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+                    <h3 style="font-weight:700; color:#0f172a;"><i class="bi bi-capsule"></i> Medicamentos</h3>
+                    <button type="button" onclick="addMedication()"
+                            style="padding:0.5rem 1rem; background:#dbeafe; color:#1e40af; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer; font-size:0.875rem;">
+                        <i class="bi bi-plus"></i> Agregar medicamento
+                    </button>
+                </div>
+
+                <div id="medications-container">
+                    <div class="medication-row" style="border:1px solid #e5e7eb; border-radius:0.75rem; padding:1.25rem; margin-bottom:1rem;">
+                        <div style="display:grid; grid-template-columns:2fr 1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block; font-size:0.75rem; font-weight:600; color:#374151; margin-bottom:0.25rem;">Medicamento *</label>
+                                <input type="text" name="medication" required placeholder="Nombre del medicamento"
+                                       style="width:100%; padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.75rem; font-weight:600; color:#374151; margin-bottom:0.25rem;">Dosis *</label>
+                                <input type="text" name="dose" required placeholder="ej: 10mg"
+                                       style="width:100%; padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.75rem; font-weight:600; color:#374151; margin-bottom:0.25rem;">Vía</label>
+                                <select name="route" style="width:100%; padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                                    {% for value, label in routes %}
+                                    <option value="{{ value }}">{{ label }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:0.75rem;">
+                            <div>
+                                <label style="display:block; font-size:0.75rem; font-weight:600; color:#374151; margin-bottom:0.25rem;">Frecuencia *</label>
+                                <input type="text" name="frequency" required placeholder="ej: Cada 8 horas"
+                                       style="width:100%; padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                            </div>
+                            <div>
+                                <label style="display:block; font-size:0.75rem; font-weight:600; color:#374151; margin-bottom:0.25rem;">Duración *</label>
+                                <input type="text" name="duration" required placeholder="ej: 7 días"
+                                       style="width:100%; padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="display:block; font-size:0.75rem; font-weight:600; color:#374151; margin-bottom:0.25rem;">Instrucciones específicas</label>
+                            <input type="text" name="instructions" placeholder="ej: Administrar con alimento"
+                                   style="width:100%; padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicaciones y advertencias -->
+            <div style="margin-bottom:1rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Indicaciones generales *</label>
+                <textarea name="general_instructions" required rows="3"
+                          placeholder="Indicaciones generales para el dueño..."
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;"></textarea>
+            </div>
+
+            <div style="margin-bottom:1.5rem;">
+                <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">Advertencias</label>
+                <textarea name="warnings" rows="2"
+                          placeholder="Efectos secundarios o advertencias importantes..."
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+                <a href="{% url 'admin_dashboard:consultations' %}"
+                   style="flex:1; padding:0.875rem; text-align:center; background:white; border:2px solid #e5e7eb; border-radius:0.5rem; font-weight:600; text-decoration:none; color:#374151;">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        style="flex:2; padding:0.875rem; background:#0284c7; color:white; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer; font-size:1rem;">
+                    <i class="bi bi-save"></i> Guardar Receta
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function addMedication() {
+    const container = document.getElementById('medications-container');
+    const first = container.querySelector('.medication-row');
+    const clone = first.cloneNode(true);
+    
+    // Limpiar valores del clon
+    clone.querySelectorAll('input').forEach(i => i.value = '');
+    clone.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+    
+    // Agregar botón eliminar
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.innerHTML = '<i class="bi bi-trash"></i> Eliminar';
+    removeBtn.style = 'margin-top:0.5rem; padding:0.375rem 0.75rem; background:#fee2e2; color:#991b1b; border:none; border-radius:0.375rem; font-size:0.75rem; font-weight:600; cursor:pointer;';
+    removeBtn.onclick = () => clone.remove();
+    clone.appendChild(removeBtn);
+    
+    container.appendChild(clone);
+}
+</script>
+{% endblock %}

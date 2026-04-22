@@ -1,0 +1,581 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Dashboard - Vetify Admin{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* KPI Cards */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+    }
+
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    }
+
+    .kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .kpi-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.75rem;
+    }
+
+    .kpi-icon-blue { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+    .kpi-icon-green { background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); }
+    .kpi-icon-purple { background: linear-gradient(135deg, #e9d5ff 0%, #d8b4fe 100%); }
+    .kpi-icon-orange { background: linear-gradient(135deg, #fed7aa 0%, #fdba74 100%); }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+
+    .kpi-label {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .kpi-change {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        margin-top: 0.5rem;
+        display: inline-block;
+    }
+
+    .kpi-change-positive {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    /* Chart Section */
+    .chart-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .chart-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .chart-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .chart-canvas {
+        height: 300px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        gap: 0.5rem;
+        padding: 1rem 0;
+    }
+
+    .chart-bar {
+        flex: 1;
+        background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+        border-radius: 0.5rem 0.5rem 0 0;
+        min-height: 20px;
+        position: relative;
+        transition: all 0.3s;
+    }
+
+    .chart-bar:hover {
+        background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+    }
+
+    .chart-bar-label {
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        color: #6b7280;
+        white-space: nowrap;
+    }
+
+    .chart-bar-value {
+        position: absolute;
+        top: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    /* Pie Chart */
+    .pie-chart {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .pie-visual {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: conic-gradient(
+            #3b82f6 0deg 120deg,
+            #ec4899 120deg 240deg,
+            #8b5cf6 240deg 360deg
+        );
+        margin-bottom: 1rem;
+    }
+
+    .pie-legend {
+        width: 100%;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .legend-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+    }
+
+    .legend-value {
+        font-weight: 600;
+        color: #0f172a;
+    }
+
+    /* Tables */
+    .table-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .table-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .table-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .view-all {
+        color: #0284c7;
+        font-size: 0.875rem;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .view-all:hover {
+        text-decoration: underline;
+    }
+
+    .simple-table {
+        width: 100%;
+    }
+
+    .simple-table tr {
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .simple-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .simple-table td {
+        padding: 0.75rem 0;
+        font-size: 0.875rem;
+    }
+
+    .simple-table .label {
+        color: #6b7280;
+    }
+
+    .simple-table .value {
+        font-weight: 600;
+        color: #0f172a;
+        text-align: right;
+    }
+
+    @media (max-width: 1024px) {
+        .chart-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- KPI Cards -->
+<div class="kpi-grid">
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-value">{{ total_appointments }}</div>
+                <div class="kpi-label">Total de Citas</div>
+                <div class="kpi-change kpi-change-positive">
+                    ↑ Todas las citas
+                </div>
+            </div>
+
+            <div class="kpi-icon kpi-icon-blue">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-value">{{ total_users }}</div>
+                <div class="kpi-label">Usuarios Registrados</div>
+                <div class="kpi-change kpi-change-positive">
+                    ↑ Activos
+                </div>
+            </div>
+
+            <div class="kpi-icon kpi-icon-green">
+                <i class="bi bi-people"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-value">{{ total_pets }}</div>
+                <div class="kpi-label">Mascotas Registradas</div>
+                <div class="kpi-change kpi-change-positive">
+                    ↑ En sistema
+                </div>
+            </div>
+
+            <div class="kpi-icon kpi-icon-purple">
+                <i class="bi bi-heart"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <div>
+                <div class="kpi-value">{{ today_appointments }}</div>
+                <div class="kpi-label">Citas Hoy</div>
+                <div class="kpi-change kpi-change-positive">
+                    ↑ {{ pending_appointments }} pendientes
+                </div>
+            </div>
+
+            <div class="kpi-icon kpi-icon-orange">
+                <i class="bi bi-clipboard-data"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Charts -->
+<div class="chart-grid">
+
+    <!-- Line Chart -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <i class="bi bi-bar-chart-line"></i>
+                Citas de los Últimos 7 Días
+            </h3>
+        </div>
+
+        <div class="chart-canvas" id="appointmentsChart">
+            <!-- Chart will be rendered here -->
+        </div>
+    </div>
+
+    <!-- Pie Chart -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 class="chart-title">
+                <i class="bi bi-heart"></i>
+                Mascotas por Tipo
+            </h3>
+        </div>
+
+        <div class="pie-chart">
+
+            <div class="pie-visual" id="pieChart"></div>
+
+            <div class="pie-legend">
+
+                {% for pet_type in pets_by_type %}
+                <div class="legend-item">
+
+                    <div class="legend-label">
+
+                        <div
+                            class="legend-color"
+                            style="background:
+                            {% if pet_type.pet_type == 'dog' %}#3b82f6
+                            {% elif pet_type.pet_type == 'cat' %}#ec4899
+                            {% else %}#8b5cf6{% endif %}">
+                        </div>
+
+                        <span>
+                            {{ pet_type.get_pet_type_display|default:pet_type.pet_type|title }}
+                        </span>
+
+                    </div>
+
+                    <div class="legend-value">
+                        {{ pet_type.count }}
+                    </div>
+
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Tables -->
+<div class="table-grid">
+
+    <!-- Latest Appointments -->
+    <div class="table-card">
+
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="bi bi-calendar"></i>
+                Últimas Citas
+            </h3>
+
+            <a href="{% url 'admin_dashboard:appointments' %}" class="view-all">
+                Ver todas →
+            </a>
+        </div>
+
+        <table class="simple-table">
+
+            {% for appointment in latest_appointments|slice:":5" %}
+
+            <tr>
+                <td class="label">
+                    {{ appointment.user.username }}
+                    <br>
+                    <small style="color: #9ca3af;">
+                        {{ appointment.date|date:"d M Y" }}
+                    </small>
+                </td>
+
+                <td class="value">
+                    {{ appointment.time }}
+                </td>
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="2" style="text-align:center;color:#9ca3af;padding:2rem;">
+                    No hay citas registradas
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+    <!-- Active Veterinarians -->
+    <div class="table-card">
+
+        <div class="table-header">
+            <h3 class="table-title">
+                <i class="bi bi-person-badge"></i>
+                Veterinarios Activos
+            </h3>
+
+            <a href="{% url 'admin_dashboard:veterinarians' %}" class="view-all">
+                Ver todos →
+            </a>
+        </div>
+
+        <table class="simple-table">
+
+            {% for vet in active_vets %}
+
+            <tr>
+                <td class="label">
+                    {{ vet.name }}
+                    <br>
+
+                    <small style="color:#9ca3af;">
+                        {{ vet.get_specialty_display }}
+                    </small>
+                </td>
+
+                <td class="value">
+                    {{ vet.years_experience }} años
+                </td>
+            </tr>
+
+            {% empty %}
+
+            <tr>
+                <td colspan="2" style="text-align:center;color:#9ca3af;padding:2rem;">
+                    No hay veterinarios registrados
+                </td>
+            </tr>
+
+            {% endfor %}
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+
+const appointmentsData = {{ appointments_by_day|safe }};
+const chartContainer = document.getElementById('appointmentsChart');
+
+if (appointmentsData && appointmentsData.length > 0) {
+
+    const maxValue = Math.max(...appointmentsData.map(d => d.count), 1);
+
+    chartContainer.innerHTML = appointmentsData.map(data => {
+
+        const height = (data.count / maxValue) * 100;
+
+        return `
+            <div class="chart-bar" style="height:${height}%">
+
+                <div class="chart-bar-value">
+                    ${data.count}
+                </div>
+
+                <div class="chart-bar-label">
+                    ${data.date}
+                </div>
+
+            </div>
+        `;
+
+    }).join('');
+
+}
+
+setTimeout(() => {
+
+    const messages = document.querySelectorAll('.message');
+
+    messages.forEach(msg => {
+
+        msg.style.animation = 'slideOut 0.3s ease-out forwards';
+
+        setTimeout(() => msg.remove(), 300);
+
+    });
+
+}, 5000);
+
+// Gráfica dinámica de mascotas
+const petsData = [
+    {% for pet_type in pets_by_type %}
+    { type: '{{ pet_type.pet_type }}', count: {{ pet_type.count }} },
+    {% endfor %}
+];
+
+const colors = { dog: '#3b82f6', cat: '#ec4899', other: '#8b5cf6' };
+const total = petsData.reduce((sum, p) => sum + p.count, 0);
+
+if (total > 0) {
+    let currentDeg = 0;
+    const segments = petsData.map(p => {
+        const deg = (p.count / total) * 360;
+        const segment = `${colors[p.type] || '#94a3b8'} ${currentDeg}deg ${currentDeg + deg}deg`;
+        currentDeg += deg;
+        return segment;
+    }).join(', ');
+
+    document.getElementById('pieChart').style.background = `conic-gradient(${segments})`;
+} else {
+    document.getElementById('pieChart').style.background = '#e5e7eb';
+}
+
+</script>
+{% endblock %}

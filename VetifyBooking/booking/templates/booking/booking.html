@@ -1,0 +1,308 @@
+{% extends "booking/base.html" %}
+{% load static %}
+
+{% block title %}Reservar Cita - Vetify{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1 class="page-header-title">
+                <span class="page-header-icon"><i class="bi bi-calendar-plus"></i></span>
+                Reservar una Cita
+            </h1>
+            <p class="page-header-subtitle">
+                Agenda una visita para tu mascota con nuestros especialistas veterinarios
+            </p>
+        </div>
+    </div>
+</section>
+
+<div style="max-width:1100px; margin:0 auto; padding:3rem 2rem;">
+    <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:3rem; align-items:start;">
+
+        <!-- Formulario -->
+        <div style="background:white; border-radius:1.25rem; padding:2.5rem; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+
+            <h2 style="font-size:1.5rem; font-weight:800; color:#0f172a; margin-bottom:0.5rem;">
+                <i class="bi bi-calendar-check" style="color:#0284c7;"></i> Datos de la Cita
+            </h2>
+            <p style="color:#6b7280; font-size:0.9rem; margin-bottom:2rem;">
+                Completa el formulario para agendar tu cita
+            </p>
+
+            <form method="POST" class="booking-form">
+                {% csrf_token %}
+
+                <!-- Mascota -->
+                <div style="margin-bottom:1.5rem;">
+                    <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">
+                        <i class="bi bi-heart-pulse" style="color:#0284c7;"></i> Mascota *
+                    </label>
+                    <select name="pet" required
+                            style="width:100%; padding:0.875rem; border:2px solid #e5e7eb; border-radius:0.75rem; font-size:0.95rem; transition:all 0.3s; background:white;"
+                            onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e5e7eb'">
+                        <option value="">Seleccionar mascota...</option>
+                        {% for pet in form.pet.field.queryset %}
+                        <option value="{{ pet.id }}" {% if form.pet.value == pet.id|stringformat:"s" %}selected{% endif %}>
+                            {{ pet.name }} — {{ pet.get_pet_type_display }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Servicio -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-capsule"></i> Servicio *
+                    </label>
+
+                    <select name="service" id="serviceSelect" class="select-pro" required>
+                        <option value="">Seleccionar servicio...</option>
+                        {% for service in form.service.field.queryset %}
+                        <option value="{{ service.id }}" {% if form.service.value == service.id|stringformat:"s" %}selected{% endif %}>
+                            {{ service.name }} — ${{ service.price }} ({{ service.duration }} min)
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Veterinario -->
+                <div id="vetContainer" class="form-group" style="display:none;">
+                    <label class="form-label">
+                        <i class="bi bi-person-badge"></i> Veterinario (opcional)
+                    </label>
+                    <div id="selectedVetCard" style="
+                        display:none;
+                        align-items:center;
+                        gap:1rem;
+                        background:#f0f9ff;
+                        border:1px solid #bae6fd;
+                        padding:1rem;
+                        border-radius:0.75rem;
+                        margin-bottom:1rem;">
+                        <div id="vetPhoto" style="width:50px; height:50px; border-radius:50%; overflow:hidden;"></div>
+
+                        <div>
+                            <div id="vetName" style="font-weight:700; color:#0369a1;"></div>
+                            <div id="vetSpecialty" style="font-size:0.8rem; color:#0284c7;"></div>
+                        </div>
+                    </div>
+
+                    <select name="veterinarian" id="vetSelect" class="select-pro">
+                        <option value="">Sin preferencia</option>
+                    </select>
+
+                    {% if preselected_vet %}
+                    {% endif %}
+                </div>
+
+                <!-- Fecha y hora -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1.5rem;">
+                    <div>
+                        <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">
+                            <i class="bi bi-calendar" style="color:#0284c7;"></i> Fecha *
+                        </label>
+                        <input type="date" name="date" required
+                               value="{{ form.date.value|default:'' }}"
+                               style="width:100%; padding:0.875rem; border:2px solid #e5e7eb; border-radius:0.75rem; font-size:0.95rem; transition:all 0.3s;"
+                               onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e5e7eb'">
+                    </div>
+                    <div>
+                        <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">
+                            <i class="bi bi-clock" style="color:#0284c7;"></i> Hora *
+                        </label>
+                        <input type="time" name="time" required
+                               value="{{ form.time.value|default:'' }}"
+                               style="width:100%; padding:0.875rem; border:2px solid #e5e7eb; border-radius:0.75rem; font-size:0.95rem; transition:all 0.3s;"
+                               onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e5e7eb'">
+                    </div>
+                </div>
+
+                <!-- Notas -->
+                <div style="margin-bottom:2rem;">
+                    <label style="display:block; font-weight:600; color:#374151; margin-bottom:0.5rem; font-size:0.875rem;">
+                        <i class="bi bi-chat-text" style="color:#0284c7;"></i> Notas adicionales
+                    </label>
+                    <textarea name="notes" rows="3" placeholder="Indica síntomas, razón de la visita u observaciones especiales..."
+                              style="width:100%; padding:0.875rem; border:2px solid #e5e7eb; border-radius:0.75rem; font-size:0.95rem; resize:vertical; transition:all 0.3s;"
+                              onfocus="this.style.borderColor='#0284c7'" onblur="this.style.borderColor='#e5e7eb'">{{ form.notes.value|default:'' }}</textarea>
+                </div>
+
+                {% if form.errors %}
+                <div style="background:#fee2e2; color:#991b1b; padding:1rem; border-radius:0.75rem; margin-bottom:1.5rem; font-size:0.875rem; border-left:4px solid #ef4444;">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}<p>{{ error }}</p>{% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <button type="submit"
+                        style="width:100%; padding:1rem; background:linear-gradient(135deg,#0284c7,#0369a1); color:white; border:none; border-radius:0.75rem; font-weight:700; font-size:1.0625rem; cursor:pointer; transition:all 0.3s; display:flex; align-items:center; justify-content:center; gap:0.75rem;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(2,132,199,0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <i class="bi bi-check-circle"></i>
+                    Confirmar Cita
+                </button>
+            </form>
+        </div>
+
+        <!-- Sidebar -->
+        <div style="display:flex; flex-direction:column; gap:1.5rem; position:sticky; top:100px;">
+
+            <!-- Imagen -->
+            <div style="border-radius:1.25rem; overflow:hidden; box-shadow:0 4px 16px rgba(0,0,0,0.12);">
+                <img src="{% static 'images/bookingdog.png' %}" alt="Mascota"
+                     style="width:100%; height:220px; object-fit:cover;">
+            </div>
+
+            <!-- Info card -->
+            <div style="background:white; border-radius:1.25rem; padding:1.5rem; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+                <h3 style="font-weight:700; color:#0f172a; margin-bottom:1rem; font-size:1rem;">
+                    <i class="bi bi-info-circle" style="color:#0284c7;"></i> ¿Qué necesitas traer?
+                </h3>
+                <div style="display:flex; flex-direction:column; gap:0.75rem; font-size:0.875rem; color:#4b5563;">
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="bi bi-check-circle-fill" style="color:#059669;"></i>
+                        Cartilla de vacunación
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="bi bi-check-circle-fill" style="color:#059669;"></i>
+                        Historial médico previo
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="bi bi-check-circle-fill" style="color:#059669;"></i>
+                        Correa o transportadora
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.5rem;">
+                        <i class="bi bi-check-circle-fill" style="color:#059669;"></i>
+                        Llegar 10 min antes
+                    </div>
+                </div>
+            </div>
+
+            <!-- Horarios card -->
+            <div style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe); border:1px solid #bae6fd; border-radius:1.25rem; padding:1.5rem;">
+                <h3 style="font-weight:700; color:#0284c7; margin-bottom:1rem; font-size:1rem;">
+                    <i class="bi bi-clock"></i> Horario de Atención
+                </h3>
+                <div style="font-size:0.875rem; color:#0369a1; display:flex; flex-direction:column; gap:0.5rem;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Lunes - Viernes</span>
+                        <strong>9:00 - 17:00</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Sábado</span>
+                        <strong>9:00 - 13:00</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>Domingo</span>
+                        <strong style="color:#dc2626;">Cerrado</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    let vetsData = [];
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const serviceSelect = document.getElementById('serviceSelect');
+    const vetContainer = document.getElementById('vetContainer');
+    const vetSelect = document.getElementById('vetSelect');
+    let preselectedVet = "{{ preselected_vet_id|default:'' }}";
+    let preselectedService = "{{ preselected_service_id|default:'' }}";
+
+    function cargarVeterinarios(serviceId) {
+        fetch(`/api/vets-by-service/${serviceId}/`)
+            .then(r => r.json())
+            .then(data => {
+                vetsData = data.vets;
+                vetSelect.innerHTML = '<option value="">Sin preferencia</option>';
+
+                data.vets.forEach(vet => {
+
+                    const isSelected = (preselectedVet && preselectedVet == vet.id);
+
+                    vetSelect.innerHTML += `
+                        <option value="${vet.id}" ${isSelected ? 'selected' : ''}>
+                            Dr(a). ${vet.name} — ${vet.specialty}
+                        </option>`;
+
+                    if (isSelected) {
+                        mostrarVetCard(vet);
+                    }
+                });
+
+                preselectedVet = null;
+
+                vetContainer.style.display = 'block';
+            });
+    }
+    vetSelect.addEventListener('change', function () {
+
+        if (!this.value) {
+            document.getElementById('selectedVetCard').style.display = 'none';
+            return;
+        }
+
+        const vet = vetsData.find(v => String(v.id) === String(this.value));
+
+        if (vet) {
+            mostrarVetCard(vet);
+        }
+    });
+
+    serviceSelect.addEventListener('change', function() {
+        if (this.value) {
+            preselectedVet = null;
+            cargarVeterinarios(this.value);
+        } else {
+            vetContainer.style.display = 'none';
+        }
+    });
+
+    if (preselectedVet) {
+        vetContainer.style.display = 'block';
+
+        if (preselectedService) {
+            serviceSelect.value = preselectedService;
+        }
+
+        cargarVeterinarios(serviceSelect.value);
+    }
+
+    function mostrarVetCard(vet) {
+        const card = document.getElementById('selectedVetCard');
+        const photo = document.getElementById('vetPhoto');
+        const name = document.getElementById('vetName');
+        const specialty = document.getElementById('vetSpecialty');
+
+        name.textContent = "Dr(a). " + vet.name;
+        specialty.textContent = vet.specialty;
+
+        if (vet.photo) {
+            photo.innerHTML = `<img src="${vet.photo}" style="width:100%; height:100%; object-fit:cover;">`;
+        } else {
+            photo.innerHTML = `<i class="bi bi-person-circle" style="font-size:2rem;"></i>`;
+        }
+
+        card.style.display = 'flex';
+        card.style.transition = 'all 0.3s ease';
+        card.style.transform = 'scale(0.95)';
+
+        setTimeout(() => {
+            card.style.transform = 'scale(1)';
+        }, 50);
+    }
+
+
+});
+</script>
+{% endblock %}
+

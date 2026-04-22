@@ -1,0 +1,242 @@
+{% extends 'booking/base.html' %}
+{% load static %}
+
+{% block title %}Historial Médico - Vetify{% endblock %}
+
+{% block content %}
+<div style="max-width:1100px; margin:0 auto; padding:2rem;">
+
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#38bdf8,#0284c7); border-radius:1.5rem; padding:2.5rem 2rem; color:white; margin-bottom:2rem; box-shadow:0 8px 20px rgba(56,189,248,0.3);">
+        <h1 style="font-size:2rem; font-weight:700; margin-bottom:0.5rem;">
+            <i class="bi bi-file-medical"></i> Historial Médico
+        </h1>
+        <p style="opacity:0.9; font-size:1.125rem;">
+            Registro completo de citas, consultas y recetas de tus mascotas
+        </p>
+    </div>
+
+    {% if appointments %}
+        {% for apt in appointments %}
+        <div style="background:white; border-radius:1.25rem; box-shadow:0 2px 8px rgba(0,0,0,0.08); margin-bottom:1.5rem; overflow:hidden;">
+
+            <!-- Header de la cita -->
+            <div style="background:{% if apt.date < today %}#f8fafc{% else %}#f0f9ff{% endif %}; padding:1.25rem 1.5rem; border-bottom:2px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <div style="width:50px; height:50px; background:linear-gradient(135deg,#bfdbfe,#93c5fd); border-radius:0.75rem; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">
+                        🐾
+                    </div>
+                    <div>
+                        <h3 style="font-weight:700; color:#0f172a; font-size:1.125rem; margin-bottom:0.25rem;">
+                            {{ apt.pet.name }}
+                            <span style="font-size:0.875rem; font-weight:400; color:#6b7280;">· {{ apt.pet.get_pet_type_display }}</span>
+                        </h3>
+                        <div style="font-size:0.875rem; color:#6b7280;">
+                            <i class="bi bi-calendar"></i> {{ apt.date|date:"d \d\e F \d\e Y" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-clock"></i> {{ apt.time|time:"H:i" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-clipboard-check"></i> {{ apt.get_service_display }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:0.5rem; align-items:center;">
+                    {% if apt.status == 'completed' %}
+                    <span style="padding:0.375rem 1rem; background:#d1fae5; color:#065f46; border-radius:9999px; font-size:0.75rem; font-weight:700;">
+                        ✓ Completada
+                    </span>
+                    {% elif apt.status == 'confirmed' %}
+                    <span style="padding:0.375rem 1rem; background:#dbeafe; color:#1e40af; border-radius:9999px; font-size:0.75rem; font-weight:700;">
+                        ● Confirmada
+                    </span>
+                    {% elif apt.status == 'pending' %}
+                    <span style="padding:0.375rem 1rem; background:#fef9c3; color:#854d0e; border-radius:9999px; font-size:0.75rem; font-weight:700;">
+                        ○ Pendiente
+                    </span>
+                    {% else %}
+                    <span style="padding:0.375rem 1rem; background:#fee2e2; color:#991b1b; border-radius:9999px; font-size:0.75rem; font-weight:700;">
+                        ✗ Cancelada
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Consulta médica -->
+            {% if apt.consultation %}
+            <div style="padding:1.5rem;">
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:1.5rem;">
+
+                    <!-- Datos clínicos -->
+                    <div>
+                        <h4 style="font-weight:700; color:#0284c7; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="bi bi-clipboard2-pulse"></i> Consulta Médica
+                        </h4>
+
+                        <div style="background:#f8fafc; border-radius:0.75rem; padding:1rem; font-size:0.875rem;">
+                            <div style="margin-bottom:0.75rem;">
+                                <span style="font-weight:600; color:#374151;">Motivo:</span>
+                                <span style="color:#4b5563;"> {{ apt.consultation.reason }}</span>
+                            </div>
+                            <div style="margin-bottom:0.75rem;">
+                                <span style="font-weight:600; color:#374151;">Síntomas:</span>
+                                <p style="color:#4b5563; margin:0.25rem 0 0;">{{ apt.consultation.symptoms }}</p>
+                            </div>
+                            <div style="margin-bottom:0.75rem;">
+                                <span style="font-weight:600; color:#374151;">Diagnóstico:</span>
+                                <p style="color:#4b5563; margin:0.25rem 0 0;">{{ apt.consultation.diagnosis }}</p>
+                            </div>
+                            <div style="margin-bottom:0.75rem;">
+                                <span style="font-weight:600; color:#374151;">Tratamiento:</span>
+                                <p style="color:#4b5563; margin:0.25rem 0 0;">{{ apt.consultation.treatment }}</p>
+                            </div>
+                            {% if apt.consultation.notes %}
+                            <div style="margin-bottom:0.75rem;">
+                                <span style="font-weight:600; color:#374151;">Notas:</span>
+                                <p style="color:#4b5563; margin:0.25rem 0 0;">{{ apt.consultation.notes }}</p>
+                            </div>
+                            {% endif %}
+                            {% if apt.consultation.next_visit %}
+                            <div style="background:#dbeafe; border-radius:0.5rem; padding:0.5rem 0.75rem; margin-top:0.75rem;">
+                                <i class="bi bi-calendar-check" style="color:#1e40af;"></i>
+                                <span style="font-weight:600; color:#1e40af;"> Próxima visita: {{ apt.consultation.next_visit|date:"d/m/Y" }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Signos vitales y vet -->
+                    <div>
+                        <h4 style="font-weight:700; color:#059669; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                            <i class="bi bi-heart-pulse"></i> Signos Vitales
+                        </h4>
+
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem; margin-bottom:1rem;">
+                            <div style="background:#f0fdf4; border-radius:0.75rem; padding:1rem; text-align:center;">
+                                <div style="font-size:1.5rem; margin-bottom:0.25rem;">⚖️</div>
+                                <div style="font-size:1.25rem; font-weight:700; color:#059669;">
+                                    {{ apt.consultation.weight_at_visit|default:"—" }}
+                                    {% if apt.consultation.weight_at_visit %}<span style="font-size:0.875rem;">kg</span>{% endif %}
+                                </div>
+                                <div style="font-size:0.75rem; color:#6b7280;">Peso</div>
+                            </div>
+                            <div style="background:#fff7ed; border-radius:0.75rem; padding:1rem; text-align:center;">
+                                <div style="font-size:1.5rem; margin-bottom:0.25rem;">🌡️</div>
+                                <div style="font-size:1.25rem; font-weight:700; color:#ea580c;">
+                                    {{ apt.consultation.temperature|default:"—" }}
+                                    {% if apt.consultation.temperature %}<span style="font-size:0.875rem;">°C</span>{% endif %}
+                                </div>
+                                <div style="font-size:0.75rem; color:#6b7280;">Temperatura</div>
+                            </div>
+                        </div>
+
+                        {% if apt.consultation.veterinarian %}
+                        <div style="background:#f8fafc; border-radius:0.75rem; padding:1rem; font-size:0.875rem;">
+                            <div style="font-weight:600; color:#374151; margin-bottom:0.5rem;">
+                                <i class="bi bi-person-badge"></i> Veterinario
+                            </div>
+                            <div style="color:#4b5563;">Dr(a). {{ apt.consultation.veterinarian.name }}</div>
+                            <div style="color:#6b7280; font-size:0.75rem;">{{ apt.consultation.veterinarian.get_specialty_display }}</div>
+                            <div style="color:#6b7280; font-size:0.75rem;">Céd. {{ apt.consultation.veterinarian.license_number }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Receta médica -->
+                {% if apt.consultation.prescription %}
+                <div style="border:2px solid #d1fae5; border-radius:0.75rem; padding:1.25rem;">
+                    <h4 style="font-weight:700; color:#065f46; margin-bottom:1rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="bi bi-capsule"></i> Receta Médica
+                    </h4>
+
+                    <div style="overflow-x:auto; margin-bottom:1rem;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.875rem;">
+                            <thead>
+                                <tr style="background:#f0fdf4;">
+                                    <th style="padding:0.625rem; text-align:left; color:#065f46; font-weight:700; border-bottom:2px solid #d1fae5;">Medicamento</th>
+                                    <th style="padding:0.625rem; text-align:left; color:#065f46; font-weight:700; border-bottom:2px solid #d1fae5;">Dosis</th>
+                                    <th style="padding:0.625rem; text-align:left; color:#065f46; font-weight:700; border-bottom:2px solid #d1fae5;">Frecuencia</th>
+                                    <th style="padding:0.625rem; text-align:left; color:#065f46; font-weight:700; border-bottom:2px solid #d1fae5;">Duración</th>
+                                    <th style="padding:0.625rem; text-align:left; color:#065f46; font-weight:700; border-bottom:2px solid #d1fae5;">Vía</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in apt.consultation.prescription.items.all %}
+                                <tr style="border-bottom:1px solid #f0fdf4;">
+                                    <td style="padding:0.625rem; color:#0f172a; font-weight:600;">{{ item.medication }}</td>
+                                    <td style="padding:0.625rem; color:#4b5563;">{{ item.dose }}</td>
+                                    <td style="padding:0.625rem; color:#4b5563;">{{ item.frequency }}</td>
+                                    <td style="padding:0.625rem; color:#4b5563;">{{ item.duration }}</td>
+                                    <td style="padding:0.625rem; color:#4b5563;">{{ item.get_route_display }}</td>
+                                </tr>
+                                {% if item.instructions %}
+                                <tr>
+                                    <td colspan="5" style="padding:0.25rem 0.625rem 0.75rem; color:#6b7280; font-size:0.8rem; font-style:italic;">
+                                        → {{ item.instructions }}
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% if apt.consultation.prescription.general_instructions %}
+                    <div style="background:#f0fdf4; border-radius:0.5rem; padding:0.75rem; margin-bottom:0.75rem; font-size:0.875rem;">
+                        <strong style="color:#065f46;"><i class="bi bi-info-circle"></i> Indicaciones:</strong>
+                        <p style="color:#374151; margin:0.25rem 0 0;">{{ apt.consultation.prescription.general_instructions }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if apt.consultation.prescription.warnings %}
+                    <div style="background:#fef9c3; border-radius:0.5rem; padding:0.75rem; font-size:0.875rem;">
+                        <strong style="color:#854d0e;"><i class="bi bi-exclamation-triangle"></i> Advertencias:</strong>
+                        <p style="color:#374151; margin:0.25rem 0 0;">{{ apt.consultation.prescription.warnings }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Botones de exportar PDF -->
+                <div style="display:flex; gap:0.75rem; margin-top:1.25rem; flex-wrap:wrap;">
+                    <a href="{% url 'export_consultation_pdf' apt.consultation.id %}"
+                       target="_blank"
+                       style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.625rem 1.25rem; background:#0284c7; color:white; border-radius:0.5rem; text-decoration:none; font-weight:600; font-size:0.875rem;">
+                        <i class="bi bi-file-earmark-pdf"></i> Descargar Consulta PDF
+                    </a>
+                    {% if apt.consultation.prescription %}
+                    <a href="{% url 'export_prescription_pdf' apt.consultation.prescription.id %}"
+                       target="_blank"
+                       style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.625rem 1.25rem; background:#059669; color:white; border-radius:0.5rem; text-decoration:none; font-weight:600; font-size:0.875rem;">
+                        <i class="bi bi-file-earmark-pdf"></i> Descargar Receta PDF
+                    </a>
+                    {% endif %}
+                </div>
+
+            </div>
+            {% else %}
+            <div style="padding:1.5rem; text-align:center; color:#9ca3af;">
+                <i class="bi bi-hourglass" style="font-size:2rem; display:block; margin-bottom:0.5rem;"></i>
+                <p style="font-size:0.875rem;">Aún no hay consulta registrada para esta cita</p>
+            </div>
+            {% endif %}
+
+        </div>
+        {% endfor %}
+
+    {% else %}
+    <div style="background:white; border-radius:1.25rem; padding:4rem 2rem; text-align:center; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+        <div style="font-size:4rem; margin-bottom:1rem; opacity:0.3;"><i class="bi bi-file-medical"></i></div>
+        <h3 style="color:#0f172a; font-weight:700; margin-bottom:0.5rem;">No tienes citas registradas</h3>
+        <p style="color:#6b7280; margin-bottom:1.5rem;">Agenda tu primera cita para comenzar tu historial médico</p>
+        <a href="{% url 'booking' %}"
+           style="display:inline-flex; align-items:center; gap:0.5rem; padding:0.875rem 2rem; background:#0284c7; color:white; border-radius:0.75rem; text-decoration:none; font-weight:600;">
+            <i class="bi bi-calendar-plus"></i> Reservar Cita
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

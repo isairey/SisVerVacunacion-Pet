@@ -1,0 +1,117 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Consultas y Recetas - Vetify Admin{% endblock %}
+{% block page_title %}Consultas y Recetas{% endblock %}
+
+{% block content %}
+<div style="margin-bottom:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+    <form method="GET" style="display:flex; gap:1rem;">
+        <input type="text" name="search" value="{{ search }}"
+               placeholder="Buscar por mascota, dueño, diagnóstico..."
+               style="padding:0.625rem 1rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; width:320px;">
+        <button type="submit" style="padding:0.625rem 1.25rem; background:#38bdf8; color:white; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer;">
+            <i class="bi bi-search"></i> Buscar
+        </button>
+    </form>
+    <a href="{% url 'admin_dashboard:add_consultation' %}"
+       style="padding:0.625rem 1.25rem; background:#0284c7; color:white; border-radius:0.5rem; font-weight:600; text-decoration:none;">
+        <i class="bi bi-plus-circle"></i> Nueva Consulta
+    </a>
+</div>
+
+<div style="background:white; border-radius:1rem; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+        <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;">
+            <i class="bi bi-file-medical"></i> Consultas Registradas
+        </h2>
+        <span style="color:#6b7280; font-size:0.875rem;">{{ total_count }} consulta{{ total_count|pluralize }}</span>
+    </div>
+
+    {% if consultations %}
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+        {% for c in consultations %}
+        <div style="border:2px solid #e5e7eb; border-radius:0.75rem; padding:1.25rem; transition:all 0.3s;"
+             onmouseover="this.style.borderColor='#38bdf8'"
+             onmouseout="this.style.borderColor='#e5e7eb'">
+
+            <div style="display:flex; justify-content:space-between; align-items:start; flex-wrap:wrap; gap:1rem;">
+                
+                <div style="display:flex; gap:1rem; align-items:center;">
+                    <div style="width:56px; height:56px; background:linear-gradient(135deg,#dbeafe,#bae6fd); border-radius:0.75rem; display:flex; align-items:center; justify-content:center; font-size:1.75rem;">
+                        🐾
+                    </div>
+                    <div>
+                        <h3 style="font-size:1.125rem; font-weight:700; color:#0f172a; margin-bottom:0.25rem;">
+                            {{ c.appointment.pet.name }}
+                            <span style="font-size:0.75rem; font-weight:400; color:#6b7280; margin-left:0.5rem;">
+                                {{ c.appointment.pet.get_pet_type_display }}
+                            </span>
+                        </h3>
+                        <div style="font-size:0.875rem; color:#6b7280;">
+                            <i class="bi bi-person"></i> {{ c.appointment.user.get_full_name|default:c.appointment.user.username }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-calendar"></i> {{ c.appointment.date|date:"d/m/Y" }}
+                            &nbsp;·&nbsp;
+                            <i class="bi bi-person-badge"></i> {{ c.veterinarian.name|default:"Sin veterinario" }}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                    {% if c.prescription %}
+                    <span style="padding:0.25rem 0.75rem; background:#d1fae5; color:#065f46; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                        <i class="bi bi-capsule"></i> Con receta
+                    </span>
+                    {% else %}
+                    <span style="padding:0.25rem 0.75rem; background:#f1f5f9; color:#64748b; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                        Sin receta
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="margin-top:1rem; padding:0.75rem; background:#f9fafb; border-radius:0.5rem; font-size:0.875rem; color:#374151;">
+                <strong>Motivo:</strong> {{ c.reason }}<br>
+                <strong>Diagnóstico:</strong> {{ c.diagnosis|truncatechars:120 }}
+            </div>
+
+            <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <a href="{% url 'admin_dashboard:edit_consultation' c.id %}"
+                   style="padding:0.5rem 1rem; background:#dbeafe; color:#1e40af; border-radius:0.375rem; font-size:0.75rem; font-weight:600; text-decoration:none;">
+                    <i class="bi bi-pencil"></i> Editar Consulta
+                </a>
+
+                {% if c.prescription %}
+                <a href="{% url 'admin_dashboard:edit_prescription' c.prescription.id %}"
+                   style="padding:0.5rem 1rem; background:#d1fae5; color:#065f46; border-radius:0.375rem; font-size:0.75rem; font-weight:600; text-decoration:none;">
+                    <i class="bi bi-pencil"></i> Editar Receta
+                </a>
+                <a href="{% url 'admin_dashboard:delete_prescription' c.prescription.id %}"
+                   onclick="return confirm('¿Eliminar receta?')"
+                   style="padding:0.5rem 1rem; background:#fef3c7; color:#92400e; border-radius:0.375rem; font-size:0.75rem; font-weight:600; text-decoration:none;">
+                    <i class="bi bi-trash"></i> Eliminar Receta
+                </a>
+                {% else %}
+                <a href="{% url 'admin_dashboard:add_prescription' c.id %}"
+                   style="padding:0.5rem 1rem; background:#f0fdf4; color:#15803d; border-radius:0.375rem; font-size:0.75rem; font-weight:600; text-decoration:none;">
+                    <i class="bi bi-plus-circle"></i> Agregar Receta
+                </a>
+                {% endif %}
+
+                <a href="{% url 'admin_dashboard:delete_consultation' c.id %}"
+                   onclick="return confirm('¿Eliminar esta consulta?')"
+                   style="padding:0.5rem 1rem; background:#fee2e2; color:#991b1b; border-radius:0.375rem; font-size:0.75rem; font-weight:600; text-decoration:none;">
+                    <i class="bi bi-trash"></i> Eliminar Consulta
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:3rem; color:#9ca3af;">
+        <div style="font-size:3rem; margin-bottom:1rem;"><i class="bi bi-file-medical"></i></div>
+        <h3>No hay consultas registradas</h3>
+        <p>Crea la primera consulta con el botón de arriba</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

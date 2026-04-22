@@ -1,0 +1,164 @@
+{% extends 'booking/base.html' %}
+{% load static %}
+
+{% block title %}Inicio - Vetify Booking{% endblock %}
+
+{% block content %}
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-container">
+        <div class="hero-content">
+            <!-- Texto del Hero -->
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    Cuidado Veterinario de 
+                    <span class="highlight">Primera Clase</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Reserva citas fácilmente, gestiona el historial de tus mascotas y accede a servicios veterinarios profesionales. Tu mascota merece lo mejor.
+                </p>
+                <div class="hero-buttons">
+                    <a href="{% url 'booking' %}" class="hero-btn hero-btn-primary">
+                        <i class="bi bi-calendar-check"></i>
+                        <span>Reservar Cita</span>
+                    </a>
+                    <a href="{% url 'register_pet' %}" class="hero-btn hero-btn-secondary">
+                        <i class="bi bi-heart-pulse"></i>
+                        <span>Registrar Mascota</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ilustración del Hero -->
+            <div class="hero-illustration">
+                <div class="hero-image-container">
+                    <img src="{% static 'images/dog-home.png' %}" alt="Dog Home" class="hero-image">
+                    
+                    <div class="hero-badge hero-badge-1">
+                        <i class="bi bi-star-fill hero-badge-icon"></i>
+                        <div>
+                            <div class="hero-badge-value">4.9/5</div>
+                            <div class="hero-badge-text">Calificación</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-badge hero-badge-2">
+                        <i class="bi bi-heart-pulse hero-badge-icon"></i>
+                        <div>
+                            <div class="hero-badge-value">2,500+</div>
+                            <div class="hero-badge-text">Mascotas Felices</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section id="features" class="features">
+    <div class="features-container">
+        <div class="features-header">
+            <h2 class="features-title">¿Por qué elegir Vetify?</h2>
+            <p class="features-subtitle">
+                Ofrecemos servicios veterinarios integrales con tecnología moderna para el cuidado de tus mascotas
+            </p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-calendar2-week"></i></div>
+                <h3 class="feature-title">Reservas Fáciles</h3>
+                <p class="feature-description">
+                    Sistema de reservas en línea 24/7. Elige fecha, hora y veterinario en segundos.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-person-badge"></i></div>
+                <h3 class="feature-title">Veterinarios Expertos</h3>
+                <p class="feature-description">
+                    Equipo profesional certificado con años de experiencia en el cuidado animal.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-clipboard-data"></i></div>
+                <h3 class="feature-title">Historial Digital</h3>
+                <p class="feature-description">
+                    Accede al historial médico completo de tus mascotas desde cualquier lugar.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-heart-pulse-fill"></i></div>
+                <h3 class="feature-title">Servicios Completos</h3>
+                <p class="feature-description">
+                    Consultas, vacunación, cirugía, emergencias y más servicios especializados.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-bell"></i></div>
+                <h3 class="feature-title">Recordatorios</h3>
+                <p class="feature-description">
+                    Notificaciones automáticas para vacunas, citas y controles médicos.
+                </p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="bi bi-heart-fill"></i></div>
+                <h3 class="feature-title">Atención Personalizada</h3>
+                <p class="feature-description">
+                    Tratamos a cada mascota como si fuera nuestra, con amor y dedicación.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS SECTION -->
+<section class="stats">
+    <div class="stats-container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-icon"><i class="bi bi-heart"></i></div>
+                <div class="stat-value">2,500+</div>
+                <div class="stat-label">Mascotas Atendidas</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-icon"><i class="bi bi-person-check"></i></div>
+                <div class="stat-value">{{ total_vets }}</div>
+                <div class="stat-label">Veterinarios Expertos</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+                <div class="stat-value">4.9/5</div>
+                <div class="stat-label">Calificación Promedio</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
+                <div class="stat-value">10,000+</div>
+                <div class="stat-label">Citas Completadas</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="cta">
+    <div class="cta-container">
+        <h2 class="cta-title">¿Listo para cuidar a tu mascota?</h2>
+        <p class="cta-text">
+            Únete a miles de dueños satisfechos que confían en Vetify para el cuidado de sus mascotas. Agenda tu primera cita hoy mismo.
+        </p>
+        <a href="{% url 'booking' %}" class="cta-button">
+            <i class="bi bi-calendar-plus"></i>
+            <span>Reservar Ahora</span>
+        </a>
+    </div>
+</section>
+{% endblock %}

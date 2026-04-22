@@ -1,0 +1,448 @@
+{% extends 'admin_dashboard/base.html' %}
+
+{% block title %}Gestión de Veterinarios - Vetify Admin{% endblock %}
+{% block page_title %}Gestión de Veterinarios{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filters-bar {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .filter-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .filter-input {
+        padding: 0.625rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .filter-input:focus {
+        outline: none;
+        border-color: #38bdf8;
+    }
+
+    .btn {
+        padding: 0.625rem 1.25rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        font-size: 0.875rem;
+    }
+
+    .btn-primary {
+        background: #38bdf8;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0284c7;
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .table-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .table-count {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .vets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .vet-card {
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.3s;
+    }
+
+    .vet-card:hover {
+        border-color: #38bdf8;
+        box-shadow: 0 4px 12px rgba(56,189,248,0.2);
+        transform: translateY(-2px);
+    }
+
+    .vet-card.inactive {
+        opacity: 0.6;
+        border-color: #d1d5db;
+    }
+
+    .vet-header {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .vet-photo {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #bae6fd 0%, #38bdf8 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        flex-shrink: 0;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(56,189,248,0.3);
+    }
+
+    .vet-info h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .badge-specialty { background: #dbeafe; color: #1e40af; }
+    .badge-active { background: #d1fae5; color: #065f46; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+
+    .vet-experience {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .vet-details {
+        background: #f9fafb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .detail-row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #4b5563;
+        margin-bottom: 0.5rem;
+    }
+
+    .detail-row:last-child { margin-bottom: 0; }
+
+    .vet-schedule {
+        background: #eff6ff;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .schedule-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1e40af;
+        margin-bottom: 0.5rem;
+    }
+
+    .schedule-time {
+        font-size: 0.875rem;
+        color: #4b5563;
+    }
+
+    .vet-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        text-align: center;
+        display: inline-block;
+    }
+
+    .btn-toggle { background: #fef3c7; color: #92400e; }
+    .btn-toggle:hover { background: #fde68a; }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #9ca3af;
+    }
+
+    .empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="filters-bar">
+        <form method="GET">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Especialidad</label>
+                    <select name="specialty" class="filter-input">
+                        <option value="all" {% if specialty_filter == 'all' %}selected{% endif %}>Todas</option>
+                        <option value="general" {% if specialty_filter == 'general' %}selected{% endif %}>Medicina General</option>
+                        <option value="surgery" {% if specialty_filter == 'surgery' %}selected{% endif %}>Cirugía</option>
+                        <option value="dental" {% if specialty_filter == 'dental' %}selected{% endif %}>Odontología</option>
+                        <option value="dermatology" {% if specialty_filter == 'dermatology' %}selected{% endif %}>Dermatología</option>
+                        <option value="cardiology" {% if specialty_filter == 'cardiology' %}selected{% endif %}>Cardiología</option>
+                        <option value="emergency" {% if specialty_filter == 'emergency' %}selected{% endif %}>Emergencias</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Buscar</label>
+                    <input type="text" name="search" class="filter-input" placeholder="Nombre, email, cédula..." value="{{ search }}">
+                </div>
+
+                <div class="filter-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="table-container">
+        <div class="table-header">
+        <div>
+            <h2 class="table-title">
+                <i class="bi bi-person-badge"></i> Listado de Veterinarios
+            </h2>
+            <p class="table-count">
+                {{ total_count }} veterinario{{ total_count|pluralize }} - {{ active_count }} activo{{ active_count|pluralize }}
+            </p>
+        </div>
+        <button onclick="document.getElementById('modalAgregarVet').style.display='flex'" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Agregar Veterinario
+        </button>
+    </div>
+
+        {% if veterinarians %}
+            <div class="vets-grid">
+                {% for vet in veterinarians %}
+                    <div class="vet-card {% if not vet.is_active %}inactive{% endif %}">
+                        <div class="vet-header">
+                            <div class="vet-photo">
+                                {% if vet.photo %}
+                                    <img src="{{ vet.photo.url }}" alt="{{ vet.name }}"
+                                        style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                                {% else %}
+                                    {{ vet.get_emoji }}
+                                {% endif %}
+                            </div>
+                            <div class="vet-info">
+                                <h3>Dr(a). {{ vet.name }}</h3>
+                                <div class="badge badge-specialty">{{ vet.get_specialty_display }}</div>
+                                <div class="badge {% if vet.is_active %}badge-active{% else %}badge-inactive{% endif %}">
+                                    {% if vet.is_active %} ✓ Activo {% else %} ✗ Inactivo {% endif %}
+                                </div>
+                                <p class="vet-experience">
+                                    <i class="bi bi-mortarboard"></i> {{ vet.years_experience }} años de experiencia
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="vet-details">
+                            <div class="detail-row"><i class="bi bi-envelope"></i> {{ vet.email }}</div>
+                            <div class="detail-row"><i class="bi bi-telephone"></i> {{ vet.phone }}</div>
+                            <div class="detail-row"><i class="bi bi-person-vcard"></i> Cédula: {{ vet.license_number }}</div>
+                        </div>
+
+                        <div class="vet-schedule">
+                            <div class="schedule-title"><i class="bi bi-calendar"></i> Horario de Atención</div>
+                            <div class="schedule-time">
+                                <i class="bi bi-clock"></i> {{ vet.start_time|time:"H:i" }} - {{ vet.end_time|time:"H:i" }}
+                            </div>
+                        </div>
+
+                        <div class="vet-actions">
+                            <a href="{% url 'admin_dashboard:edit_veterinarian' vet.id %}"
+                            class="action-btn" style="background:#dbeafe; color:#1e40af;">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a href="{% url 'admin_dashboard:toggle_vet_status' vet.id %}"
+                            class="action-btn btn-toggle"
+                            onclick="return confirm('¿Cambiar estado del veterinario?')">
+                                {% if vet.is_active %}
+                                    <i class="bi bi-lock"></i> Desactivar
+                                {% else %}
+                                    <i class="bi bi-check-circle"></i> Activar
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-icon"><i class="bi bi-person-badge"></i></div>
+                <h3>No hay veterinarios</h3>
+                <p>No se encontraron veterinarios con los filtros seleccionados</p>
+            </div>
+        {% endif %}
+    </div>
+    <!-- Modal Agregar Veterinario -->
+    <div id="modalAgregarVet" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:600px; max-height:90vh; overflow-y:auto; margin:1rem;">
+            
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;">
+                    <i class="bi bi-person-plus"></i> Agregar Veterinario
+                </h2>
+                <button onclick="document.getElementById('modalAgregarVet').style.display='none'" 
+                        style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#6b7280;">✕</button>
+            </div>
+
+            <form method="POST" action="{% url 'admin_dashboard:add_veterinarian' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Nombre completo *</label>
+                        <input type="text" name="name" class="filter-input" required placeholder="Dr. Juan García">
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Email *</label>
+                        <input type="email" name="email" class="filter-input" required placeholder="doctor@vetify.com">
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Teléfono</label>
+                        <input type="text" name="phone" class="filter-input" placeholder="+52 555 000 0000">
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Cédula profesional *</label>
+                        <input type="text" name="license_number" class="filter-input" required placeholder="CEP-12345">
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Especialidad *</label>
+                        <select name="specialty" class="filter-input" required>
+                            <option value="general">Medicina General</option>
+                            <option value="surgery">Cirugía</option>
+                            <option value="dental">Odontología</option>
+                            <option value="dermatology">Dermatología</option>
+                            <option value="cardiology">Cardiología</option>
+                            <option value="emergency">Emergencias</option>
+                        </select>
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Años de experiencia</label>
+                        <input type="number" name="years_experience" class="filter-input" min="0" placeholder="5">
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora inicio</label>
+                        <input type="time" name="start_time" class="filter-input" value="08:00">
+                    </div>
+
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora fin</label>
+                        <input type="time" name="end_time" class="filter-input" value="17:00">
+                    </div>
+
+                </div>
+                <!-- Foto -->
+                <div style="display:flex; flex-direction:column; gap:0.5rem; grid-column:1/-1;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Foto</label>
+                    <input type="file" name="photo" accept="image/*" class="filter-input">
+                </div>
+
+                <!-- Bio -->
+                <div style="display:flex; flex-direction:column; gap:0.5rem; grid-column:1/-1;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Biografía</label>
+                    <textarea name="bio" rows="2" class="filter-input" placeholder="Breve descripción del veterinario..."></textarea>
+                </div>
+
+                <!-- Servicios -->
+                <div style="display:flex; flex-direction:column; gap:0.5rem; grid-column:1/-1;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Servicios que ofrece</label>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:#f9fafb; border:1px solid #d1d5db; border-radius:0.5rem; padding:0.75rem;">
+                        {% for service in services %}
+                        <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
+                            <input type="checkbox" name="services" value="{{ service.id }}">
+                            {{ service.name }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                    <button type="button" onclick="document.getElementById('modalAgregarVet').style.display='none'"
+                            class="btn" style="flex:1; background:white; border:2px solid #e5e7eb; color:#374151;">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        <i class="bi bi-plus-circle"></i> Agregar Veterinario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

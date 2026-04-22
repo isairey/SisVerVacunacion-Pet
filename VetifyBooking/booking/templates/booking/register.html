@@ -1,0 +1,85 @@
+{% extends 'booking/base.html' %}
+
+{% block title %}Registro - Vetify Booking{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+    <div class="auth-wrapper">
+
+        <div class="auth-card">
+
+            <div class="auth-header">
+                <i class="bi bi-person-plus auth-main-icon"></i>
+                <h2>Crear Cuenta</h2>
+                <p>Comienza a reservar citas veterinarias</p>
+            </div>
+
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label>Usuario</label>
+                    <div class="input-group">
+                        <i class="bi bi-person"></i>
+                        {{ form.username }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Correo electrónico</label>
+                    <div class="input-group">
+                        <i class="bi bi-envelope"></i>
+                        {{ form.email }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <div class="input-group">
+                        <i class="bi bi-telephone"></i>
+                        {{ form.phone }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <div class="input-group">
+                        <i class="bi bi-lock"></i>
+                        {{ form.password1 }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Confirmar contraseña</label>
+                    <div class="input-group">
+                        <i class="bi bi-shield-check"></i>
+                        {{ form.password2 }}
+                    </div>
+                </div>
+
+                {% if form.errors %}
+                <div class="form-errors">
+                    {% for field, errors in form.errors.items %}
+                        {% for error in errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <button type="submit" class="auth-btn">
+                    <i class="bi bi-check-circle"></i> Crear Cuenta
+                </button>
+
+                <p class="auth-footer">
+                    ¿Ya tienes una cuenta?
+                    <a href="{% url 'login' %}">Iniciar sesión</a>
+                </p>
+
+            </form>
+
+        </div>
+
+    </div>
+</section>
+{% endblock %}

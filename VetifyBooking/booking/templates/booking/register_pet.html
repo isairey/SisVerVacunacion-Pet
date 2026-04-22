@@ -1,0 +1,783 @@
+{% extends 'booking/base.html' %}
+{% load static %}
+
+{% block title %}Registrar Mascota - Vetify{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Register Pet Page Specific Styles */
+    .register-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .page-header {
+        background: linear-gradient(135deg,#38bdf8,#0284c7);
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        color: white;
+        box-shadow: 0 10px 25px rgba(2,132,199,0.25);
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .page-header p {
+        opacity: .9;
+        margin-top: .25rem;
+    }
+
+    /* Grid Layout */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    /* Card */
+    .card {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Form */
+    .form-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-header {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0284c7;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #38bdf8;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+    }
+
+    textarea.form-input {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    .form-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    /* Radio Buttons */
+    .radio-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .radio-option {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .radio-card {
+        border: 2px solid #d1d5db;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-align: center;
+    }
+
+    .radio-card:hover {
+        border-color: #38bdf8;
+    }
+
+    .radio-card input[type="radio"] {
+        display: none;
+    }
+
+    .radio-card input[type="radio"]:checked ~ label,
+    .radio-card:has(input[type="radio"]:checked) {
+        border-color: #38bdf8;
+        background: #e0f2fe;
+    }
+
+    .radio-card label {
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .radio-emoji {
+        font-size: 2rem;
+    }
+
+    /* Checkboxes */
+    .checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkbox-item input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .checkbox-item label {
+        cursor: pointer;
+        font-size: 0.875rem;
+    }
+
+    /* File Upload */
+    .file-upload {
+        border: 2px dashed #d1d5db;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .file-upload:hover {
+        border-color: #38bdf8;
+        background: #e0f2fe;
+    }
+
+    .file-upload-icon {
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .file-upload input[type="file"] {
+        display: none;
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .btn-primary {
+        background: #38bdf8;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #0284c7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+    }
+
+    .btn-outline {
+        background: white;
+        color: #0284c7;
+        border: 2px solid #38bdf8;
+    }
+
+    .btn-outline:hover {
+        background: #e0f2fe;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid #e5e7eb;
+    }
+
+    .btn-group .btn {
+        flex: 1;
+    }
+
+    /* Preview Card */
+    .preview-card {
+        position: sticky;
+        top: 100px;
+    }
+
+    .preview-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0284c7;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-description {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 1.5rem;
+    }
+
+    .pet-preview {
+        background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 100%);
+        border: 1px solid #bae6fd;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .preview-header {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .preview-avatar {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        flex-shrink: 0;
+        border: 2px solid white;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .preview-info h3 {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #0284c7;
+        margin-bottom: 0.5rem;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        background: #dbeafe;
+        color: #1e40af;
+        margin-bottom: 0.5rem;
+    }
+
+    .preview-details {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0.25rem 0;
+    }
+
+    /* Tips Card */
+    .tips-card {
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border: 1px solid #6ee7b7;
+        border-radius: 1rem;
+        padding: 1.5rem;
+    }
+
+    .tips-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #065f46;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tips-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .tip-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #047857;
+    }
+
+    @media (max-width: 1024px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .preview-card {
+            position: static;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .form-grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .radio-group {
+            flex-direction: column;
+        }
+
+        .radio-option {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>
+        <i class="bi bi-paw-fill"></i>
+            {{ page_title|default:"Registrar Nueva Mascota" }}
+        </h1>
+        <p>{{ page_description|default:" Añade a tu compañero peludo a nuestro sistema" }}</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data"
+    action="{% if pet %}{% url 'edit_pet' pet.id %}{% else %}{% url 'register_pet' %}{% endif %}">
+        {% csrf_token %}
+
+        <div class="form-grid">
+            <!-- Left Column: Form -->
+            <div>
+                <input type="hidden" name="next" value="{{ next }}">
+
+
+                <div class="card">
+                    <!-- Section 1: Basic Info -->
+                    <div class="form-section">
+                        <h3 class="section-header"><i class="bi bi-card-text"></i> Información Básica</h3>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="bi bi-paw"></i> Nombre de la Mascota *</label>
+                            <input type="text"
+                            name="name"
+                            class="form-input"
+                            placeholder="Nombre de tu mascota"
+                            value="{{ pet.name|default:'' }}"
+                            required
+                            id="petName"
+                            oninput="updatePreview()">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Mascota *</label>
+
+                            <div class="radio-group">
+
+                                <div class="radio-option">
+                                    <div class="radio-card">
+                                        <input type="radio" name="species" value="dog" id="dog" {% if pet.species == "dog" %}checked{% endif %} onchange="updatePreview()">
+                                        <label for="dog">
+                                            <div class="radio-emoji">🐕</div>
+                                            <div>Perro</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="radio-option">
+                                    <div class="radio-card">
+                                        <input type="radio" name="species" value="cat" id="cat" {% if pet.species == "cat" %}checked{% endif %} onchange="updatePreview()">
+                                        <label for="cat">
+                                            <div class="radio-emoji">🐈</div>
+                                            <div>Gato</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="radio-option">
+                                    <div class="radio-card">
+                                        <input type="radio" name="species" value="other" id="other" {% if pet.species == "other" %}checked{% endif %} onchange="updatePreview()">
+                                        <label for="other">
+                                            <div class="radio-emoji">🐰</div>
+                                            <div>Otro</div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="otherTypeGroup" style="display: none;">
+                            <label class="form-label">Especificar tipo *</label>
+                            <select name="other_type" class="form-input" id="otherTypeSelect">
+                                <option value="">Seleccionar...</option>
+                                <option value="Conejo">🐰 Conejo</option>
+                                <option value="Hámster">🐹 Hámster</option>
+                                <option value="Ave">🦜 Ave / Pájaro</option>
+                                <option value="Tortuga">🐢 Tortuga</option>
+                                <option value="Pez">🐟 Pez</option>
+                                <option value="Reptil">🦎 Reptil</option>
+                                <option value="Hurón">🦡 Hurón</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Physical Characteristics -->
+                    <div class="form-section">
+                        <h3 class="section-header"><i class="bi bi-rulers"></i> Características Físicas</h3>
+                        
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label"><i class="bi bi-bullseye"></i> Raza</label>
+                                <input type="text"
+                                name="breed"
+                                class="form-input"
+                                placeholder="Seleccionar raza"
+                                value="{{ pet.breed|default:'' }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="bi bi-palette"></i> Color</label>
+                                <input type="text"
+                                name="color"
+                                class="form-input"
+                                placeholder="ej: Café, Negro, Blanco"
+                                value="{{ pet.color|default:'' }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="bi bi-cake2"></i> Fecha de Nacimiento *</label>
+                                <input type="date"
+                                name="date_of_birth"
+                                class="form-input"
+                                required
+                                max="{{ today }}"
+                                value="{{ pet.date_of_birth|date:'Y-m-d'|default:'' }}"
+                                id="petDOB"
+                                onchange="updatePreview()">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="bi bi-speedometer2"></i> Peso *</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="number"
+                                    step="0.1"
+                                    name="weight"
+                                    class="form-input"
+                                    placeholder="0.0"
+                                    min="0.1"
+                                    max="70"
+                                    required
+                                    value="{{ pet.weight|default:'' }}"
+                                    id="petWeight"
+                                    onchange="updatePreview()">
+                                    <span>kg</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Health Info -->
+                    <div class="form-section">
+                        <h3 class="section-header"><i class="bi bi-heart-pulse"></i> Información de Salud</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Estado de Vacunación *</label>
+                            <div class="radio-group">
+                                <div class="radio-option">
+                                    <div class="radio-card" style="border-color: #10b981;">
+                                        <input type="radio" name="vaccination" value="updated" id="vacUpdated" checked onchange="updatePreview()">
+                                        <label for="vacUpdated">
+                                            <div><i class="bi bi-check-circle"></i> Al día</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="radio-option">
+                                    <div class="radio-card" style="border-color: #f59e0b;">
+                                        <input type="radio" name="vaccination" value="pending" id="vacPending" onchange="updatePreview()">
+                                        <label for="vacPending">
+                                            <div><i class="bi bi-clock"></i> Pendiente</div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="radio-option">
+                                    <div class="radio-card" style="border-color: #ef4444;">
+                                        <input type="radio" name="vaccination" value="none" id="vacNone" onchange="updatePreview()">
+                                        <label for="vacNone">
+                                            <div><i class="bi bi-x-circle"></i> Sin vacunas</div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label"><i class="bi bi-hospital"></i> Alergias o Condiciones Médicas</label>
+                            <textarea name="allergies" class="form-input" placeholder="Describe alergias, condiciones médicas o medicamentos que esté tomando..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Comportamiento</label>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="friendly_people" id="friendlyPeople" checked>
+                                    <label for="friendlyPeople">Amigable con personas</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="friendly_animals" id="friendlyAnimals" checked>
+                                    <label for="friendlyAnimals">Amigable con otros animales</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="nervous" id="nervous">
+                                    <label for="nervous">Nervioso en el veterinario</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="special_care" id="specialCare">
+                                    <label for="specialCare">Requiere cuidado especial</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: Emergency Contact -->
+                    <div class="form-section">
+                        <h3 class="section-header"><i class="bi bi-exclamation-triangle"></i> Contacto de Emergencia (Opcional)</h3>
+                        
+                        <div class="form-grid-2">
+                            <div class="form-group">
+                                <label class="form-label"><i class="bi bi-person"></i> Nombre Completo</label>
+                                <input type="text" name="emergency_name" class="form-input" placeholder="Persona de confianza">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label"><i class="bi bi-telephone"></i> Teléfono</label>
+                                <input type="tel" name="emergency_phone" class="form-input" placeholder="+52 555 000 0000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 5: Photo -->
+                    <div class="form-section">
+                        <h3 class="section-header"><i class="bi bi-camera"></i> Foto de la Mascota (Opcional)</h3>
+                        
+                        <div class="file-upload" onclick="document.getElementById('photoInput').click()">
+    
+                            <!-- Preview de imagen -->
+                            <img id="imagePreview" style="display:none; width:100%; max-height:200px; object-fit:cover; border-radius:0.5rem; margin-bottom:1rem;" />
+
+                            <!-- Contenido original -->
+                            <div id="uploadContent">
+                                <div class="file-upload-icon"><i class="bi bi-cloud-arrow-up"></i></div>
+                                <p style="font-weight: 600; margin-bottom: 0.25rem;">Arrastra una foto aquí</p>
+                                <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.75rem;">o haz clic para seleccionar</p>
+                                <button type="button" class="btn btn-outline" style="font-size: 0.875rem;">Seleccionar Archivo</button>
+                                <p style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem;">PNG, JPG hasta 5MB</p>
+                            </div>
+
+                            <input type="file" name="photo" id="photoInput" accept="image/*">
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="btn-group">
+                        <a href="{{ next }}" class="btn btn-outline">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">{{ button_text|default:"Registrar Mascota" }}</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Preview -->
+            <div>
+                <div class="preview-card">
+                    <div class="card">
+                        <h3 class="preview-title">Vista Previa</h3>
+                        <p class="preview-description">Así se verá tu mascota en tu perfil</p>
+                        
+                        <div class="pet-preview">
+                            <div class="preview-header">
+                                <div class="preview-avatar" id="previewEmoji"><i class="bi bi-paw-fill"></i></div>
+                                <div class="preview-info">
+                                    <h3 id="previewName">Nombre de tu mascota</h3>
+                                    <div class="badge" id="previewType">Perro</div>
+                                    <div class="preview-details"><i class="bi bi-cake2"></i> <span id="previewAge">0</span> años</div>
+                                    <div class="preview-details"><i class="bi bi-speedometer2"></i> <span id="previewWeight">0</span> kg</div>
+                                    <div class="preview-details" id="previewVac"><i class="bi bi-heart-pulse"></i> Vacunas al día</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tips-card">
+                        <h3 class="tips-title"><i class="bi bi-lightbulb"></i> Consejos</h3>
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <span><i class="bi bi-check-circle"></i></span>
+                                <span>Nombre corto y fácil de recordar</span>
+                            </div>
+                            <div class="tip-item">
+                                <span><i class="bi bi-check-circle"></i></span>
+                                <span>Peso y edad actualizados</span>
+                            </div>
+                            <div class="tip-item">
+                                <span><i class="bi bi-check-circle"></i></span>
+                                <span>Información de alergias completa</span>
+                            </div>
+                            <div class="tip-item">
+                                <span><i class="bi bi-check-circle"></i></span>
+                                <span>Foto clara de tu mascota</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide other type field
+    document.querySelectorAll('input[name="species"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const group = document.getElementById('otherTypeGroup');
+            const select = document.getElementById('otherTypeSelect');
+            if (this.value === 'other') {
+                group.style.display = 'block';
+                select.required = true;
+            } else {
+                group.style.display = 'none';
+                select.required = false;
+            }
+        });
+    });
+
+    // Validación del formulario
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const weight = parseFloat(document.getElementById('petWeight').value);
+        const dob = document.getElementById('petDOB').value;
+
+        if (weight > 70) {
+            e.preventDefault();
+            alert('El peso no puede ser mayor a 70 kg.');
+            return;
+        }
+
+        if (dob) {
+            const birthYear = new Date(dob).getFullYear();
+            const currentYear = new Date().getFullYear();
+            if (currentYear - birthYear > 200) {
+                e.preventDefault();
+                alert('La fecha de nacimiento no es válida.');
+                return;
+            }
+        }
+    });
+
+    // Update preview
+    function updatePreview() {
+        const name = document.getElementById('petName').value || 'Nombre de tu mascota';
+        document.getElementById('previewName').textContent = name;
+
+        const typeEl = document.querySelector('input[name="species"]:checked');
+        if (typeEl) {
+            const type = typeEl.value;
+            const typeLabels = { dog: 'Perro', cat: 'Gato', other: 'Otro' };
+            const icons = { dog: '🐕', cat: '🐈', other: '🐰' };
+            document.getElementById('previewType').textContent = typeLabels[type];
+            document.getElementById('previewEmoji').textContent = icons[type];
+        }
+
+        const dob = document.getElementById('petDOB').value;
+        if (dob) {
+            const age = Math.floor((new Date() - new Date(dob)) / (365.25 * 24 * 60 * 60 * 1000));
+            document.getElementById('previewAge').textContent = age;
+        }
+
+        const weight = document.getElementById('petWeight').value || '0';
+        document.getElementById('previewWeight').textContent = weight;
+
+        const vacEl = document.querySelector('input[name="vaccination"]:checked');
+        if (vacEl) {
+            const vacLabels = {
+                updated: '<i class="bi bi-heart-pulse"></i> Vacunas al día',
+                pending: '<i class="bi bi-clock"></i> Vacunas pendientes',
+                none: '<i class="bi bi-x-circle"></i> Sin vacunas'
+            };
+            document.getElementById('previewVac').innerHTML = vacLabels[vacEl.value];
+        }
+    }
+
+    document.getElementById('petName').addEventListener('input', updatePreview);
+    document.getElementById('petDOB').addEventListener('change', updatePreview);
+    document.getElementById('petWeight').addEventListener('input', updatePreview);
+
+
+    // Preview de imagen
+    document.getElementById('photoInput').addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        const preview = document.getElementById('imagePreview');
+        const content = document.getElementById('uploadContent');
+
+        if (file) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                content.style.display = 'none';
+            };
+
+            reader.readAsDataURL(file);
+        }
+    });
+
+</script>
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'booking/base.html' %}
+{% block title %}Mis Citas - Vetify Booking{% endblock %}
+{% block content %}
+<section class="appointments-page">
+    <div class="appointments-container">
+        <div class="appointments-header">
+            <div>
+                <h2><i class="bi bi-calendar2-check"></i> Mis Citas</h2>
+                <p>Gestiona y revisa tus citas</p>
+            </div>
+            <a href="{% url 'booking' %}" class="btn-primary">
+                <i class="bi bi-plus-lg"></i> Cita nueva
+            </a>
+        </div>
+
+        {% if appointments %}
+        <div class="appointments-card">
+            <div class="appointment-row header">
+                <strong>Mascota</strong>
+                <strong>Fecha</strong>
+                <strong>Hora</strong>
+                <strong>Servicio</strong>
+                <strong>Estado</strong>
+                <strong>Acciones</strong>
+                <strong></strong>
+            </div>
+
+            {% for appointment in appointments %}
+            <div class="appointment-row">
+                <div class="appointment-main">
+                    <h4>{{ appointment.pet.name }}</h4>
+                </div>
+                <div class="appointment-date">
+                    {{ appointment.date|date:"M d, Y" }}
+                </div>
+                <div class="appointment-time">
+                    {{ appointment.time|time:"g:i A" }}
+                </div>
+                <div class="appointment-service">
+                    {{ appointment.service.name }}
+                </div>
+
+                <!-- Estado con color -->
+                <div class="appointment-status">
+                    {% if appointment.status == 'confirmed' %}
+                        <span style="padding:0.25rem 0.75rem; background:#dbeafe; color:#1e40af; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                            ✓ Confirmada
+                        </span>
+                    {% elif appointment.status == 'completed' %}
+                        <span style="padding:0.25rem 0.75rem; background:#d1fae5; color:#065f46; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                            ✓ Completada
+                        </span>
+                    {% elif appointment.status == 'cancelled' %}
+                        <span style="padding:0.25rem 0.75rem; background:#fee2e2; color:#991b1b; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                            ✗ Cancelada
+                        </span>
+                    {% else %}
+                        <span style="padding:0.25rem 0.75rem; background:#fef9c3; color:#854d0e; border-radius:9999px; font-size:0.75rem; font-weight:600;">
+                            ○ Pendiente
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="appointment-actions">
+                    {% if appointment.status != 'cancelled' and appointment.status != 'completed' %}
+                        <form method="post" action="{% url 'delete_appointment' appointment.pk %}">
+                            {% csrf_token %}
+                            <button type="submit" class="delete-btn"
+                                onclick="return confirm('¿Cancelar esta cita?')">
+                                Cancelar
+                            </button>
+                        </form>
+                    {% else %}
+                        <button class="delete-btn" disabled style="opacity:0.5; cursor:not-allowed;">
+                            Cancelar
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+            <h3>No hay citas reservadas.</h3>
+            <p>Comienza con tu primera cita.</p>
+            <a href="{% url 'booking' %}" class="btn-primary">
+                Reservar cita
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

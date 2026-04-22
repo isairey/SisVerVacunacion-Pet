@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Dashboard - Vetify{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/admin-sidebar.css' %}">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body>
+
+    <!-- Botón para móvil -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="bi bi-list"></i>
+    </button>
+
+    <div class="admin-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-logo">
+                <div style="width:48px; height:48px; flex-shrink:0;">
+                    <img src="{% static 'images/paw.png' %}" alt="Vetify" 
+                        style="width:100%; height:100%; object-fit:contain; filter:brightness(0) invert(1);">
+                </div>
+                <div style="display:flex; flex-direction:column;">
+                    <span style="font-size:1.25rem; font-weight:800; color:white;">VetifyBooking</span>
+                    <span style="font-size:0.7rem; color:rgba(255,255,255,0.5);">Panel Administrador</span>
+                </div>
+            </div>
+
+            <!-- Navegación -->
+            <nav class="sidebar-nav">
+
+                <!-- Sección: Principal -->
+                <div class="sidebar-nav-section">
+                    <div class="sidebar-nav-title">Principal</div>
+
+                    <a href="{% url 'admin_dashboard:dashboard' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-speedometer2"></i>
+                        </span>
+                        <span class="sidebar-link-text">Dashboard</span>
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:reports' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-graph-up"></i>
+                        </span>
+                        <span class="sidebar-link-text">Reportes</span>
+                    </a>
+                </div>
+
+                <!-- Sección: Gestión -->
+                <div class="sidebar-nav-section">
+                    <div class="sidebar-nav-title">Gestión</div>
+
+                    <a href="{% url 'admin_dashboard:appointments' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'appointments' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </span>
+                        <span class="sidebar-link-text">Citas</span>
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:users' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-people"></i>
+                        </span>
+                        <span class="sidebar-link-text">Usuarios</span>
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:pets' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'pets' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-heart"></i>
+                        </span>
+                        <span class="sidebar-link-text">Mascotas</span>
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:veterinarians' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'veterinarians' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-person-badge"></i>
+                        </span>
+                        <span class="sidebar-link-text">Veterinarios</span>
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:consultations' %}"
+                    class="sidebar-link {% if request.resolver_match.url_name == 'consultations' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-file-medical"></i>
+                        </span>
+                        <span class="sidebar-link-text">Consultas y Recetas</span>
+                    </a>
+                </div>
+
+                <!-- Sección: Configuración -->
+                <div class="sidebar-nav-section">
+                    <div class="sidebar-nav-title">Configuración</div>
+
+                    <a href="{% url 'admin_dashboard:services' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'services' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-capsule"></i>
+                        </span>
+                        <span class="sidebar-link-text">Servicios</span>
+                    </a>
+
+                    <a href="{% url 'admin_dashboard:schedules' %}"
+                       class="sidebar-link {% if request.resolver_match.url_name == 'schedules' %}active{% endif %}">
+                        <span class="sidebar-link-icon">
+                            <i class="bi bi-clock"></i>
+                        </span>
+                        <span class="sidebar-link-text">Horarios</span>
+                    </a>
+
+                </div>
+
+            </nav>
+
+            <!-- Footer del sidebar -->
+            <div class="sidebar-footer">
+
+                <a href="{% url 'home' %}" class="sidebar-link">
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-house"></i>
+                    </span>
+                    <span class="sidebar-link-text">Vista Usuario</span>
+                </a>
+
+                <a href="{% url 'logout' %}" class="sidebar-logout">
+                    <span class="sidebar-link-icon">
+                        <i class="bi bi-box-arrow-right"></i>
+                    </span>
+                    <span>Cerrar Sesión</span>
+                </a>
+
+            </div>
+
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+
+            <!-- Header superior -->
+            <header class="top-header">
+                <h1 class="page-title">
+                    {% block page_title %}Dashboard{% endblock %}
+                </h1>
+                <div class="header-actions">
+                    <div class="user-info">
+                        <a href="{% url 'admin_dashboard:admin_profile' %}"
+                        style="display:flex; align-items:center; gap:0.75rem; text-decoration:none;">
+                            <div class="user-avatar" style="cursor:pointer; overflow:hidden;">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}"
+                                        style="width:100%; height:100%; object-fit:cover; border-radius:50%;">
+                                {% else %}
+                                    {{ user.first_name.0|upper }}{{ user.last_name.0|upper }}
+                                {% endif %}
+                            </div>
+                            <span class="user-name" style="color:#0f172a;">
+                                {{ user.get_full_name|default:user.username }}
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Mensajes -->
+            {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                <div class="message message-{{ message.tags }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Contenido de la página -->
+            <main>
+                {% block content %}{% endblock %}
+            </main>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
+
+        // Cerrar sidebar al hacer click fuera (móvil)
+        document.addEventListener('click', function(event) {
+
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-toggle');
+
+            if (window.innerWidth <= 1024) {
+                if (!sidebar.contains(event.target) && event.target !== toggle) {
+                    sidebar.classList.remove('open');
+                }
+            }
+
+        });
+
+        // Auto-cerrar mensajes después de 5 segundos
+        setTimeout(function() {
+
+            const messages = document.querySelectorAll('.message');
+
+            messages.forEach(function(message) {
+
+                message.style.animation = 'slideOut 0.3s ease-out forwards';
+
+                setTimeout(function() {
+                    message.remove();
+                }, 300);
+
+            });
+
+        }, 5000);
+
+    </script>
+
+    {% block extra_js %}{% endblock %}
+
+</body>
+</html>

@@ -1,0 +1,302 @@
+{% extends 'booking/base.html' %}
+{% load static %}
+
+{% block title %}Editar Perfil - Vetify{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/edit-profile-styles.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- HEADER DE LA PÁGINA -->
+<section class="page-header">
+    <div class="container">
+        <div class="page-header-content">
+            <h1 class="page-header-title">
+                <span class="page-header-icon"><i class="bi bi-pencil-square"></i></span>
+                Editar Perfil
+            </h1>
+            <p class="page-header-subtitle">
+                Actualiza tu información personal y foto de perfil
+            </p>
+        </div>
+    </div>
+</section>
+
+<div class="edit-profile-container">
+    <div class="edit-profile-grid">
+        <!-- FORMULARIO PRINCIPAL -->
+        <div class="edit-profile-main">
+            <form method="POST" enctype="multipart/form-data" class="edit-profile-form">
+                {% csrf_token %}
+                
+                <!-- INFORMACIÓN PERSONAL -->
+                <div class="edit-section">
+                    <div class="edit-section-header">
+                        <h2 class="edit-section-title">
+                            <i class="bi bi-person-fill"></i>
+                            Información Personal
+                        </h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="first_name" class="form-label">
+                                <i class="bi bi-person"></i>
+                                Nombre
+                            </label>
+                            <input 
+                                type="text" 
+                                id="first_name" 
+                                name="first_name" 
+                                class="form-input" 
+                                value="{{ user.first_name }}"
+                                placeholder="Tu nombre"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="last_name" class="form-label">
+                                <i class="bi bi-person"></i>
+                                Apellido
+                            </label>
+                            <input 
+                                type="text" 
+                                id="last_name" 
+                                name="last_name" 
+                                class="form-input" 
+                                value="{{ user.last_name }}"
+                                placeholder="Tu apellido"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="email" class="form-label">
+                                <i class="bi bi-envelope"></i>
+                                Correo Electrónico
+                            </label>
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-input" 
+                                value="{{ user.email }}"
+                                placeholder="correo@ejemplo.com"
+                                required
+                            >
+                            <small class="form-help">Este correo se usará para notificaciones</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone" class="form-label">
+                                <i class="bi bi-telephone"></i>
+                                Teléfono
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="phone" 
+                                name="phone" 
+                                class="form-input" 
+                                value="{{ user.profile.phone }}"
+                                placeholder="+56 9 1234 5678"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="date_of_birth" class="form-label">
+                                <i class="bi bi-calendar"></i>
+                                Fecha de Nacimiento
+                            </label>
+                            <input 
+                                type="date" 
+                                id="date_of_birth" 
+                                name="date_of_birth" 
+                                class="form-input" 
+                                value="{{ user.profile.date_of_birth|date:'Y-m-d' }}"
+                            >
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="address" class="form-label">
+                                <i class="bi bi-geo-alt"></i>
+                                Dirección
+                            </label>
+                            <input 
+                                type="text" 
+                                id="address" 
+                                name="address" 
+                                class="form-input" 
+                                value="{{ user.profile.address }}"
+                                placeholder="Calle, número, comuna, ciudad"
+                            >
+                        </div>
+
+                        <div class="form-group form-group-full">
+                            <label for="bio" class="form-label">
+                                <i class="bi bi-card-text"></i>
+                                Biografía (Opcional)
+                            </label>
+                            <textarea 
+                                id="bio" 
+                                name="bio" 
+                                class="form-textarea" 
+                                rows="4"
+                                placeholder="Cuéntanos un poco sobre ti y tus mascotas..."
+                            >{{ user.profile.bio }}</textarea>
+                            <small class="form-help">Máximo 500 caracteres</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOTONES DE ACCIÓN -->
+                <div class="form-actions">
+                    <a href="{% url 'profile' %}" class="btn-cancel">
+                        <i class="bi bi-x-circle"></i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-check-circle"></i>
+                        Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- SIDEBAR - FOTO DE PERFIL -->
+        <div class="edit-profile-sidebar">
+            <!-- CAMBIAR FOTO -->
+            <div class="edit-section">
+                <div class="edit-section-header">
+                    <h2 class="edit-section-title">
+                        <i class="bi bi-camera-fill"></i>
+                        Foto de Perfil
+                    </h2>
+                </div>
+
+                <div class="avatar-upload-section">
+                    <div class="avatar-preview">
+                        {% if user.profile.avatar %}
+                            <img id="avatar-preview-img" src="{{ user.profile.avatar.url }}" alt="Avatar">
+                        {% else %}
+                            <div class="avatar-preview-placeholder" id="avatar-preview-placeholder">
+                                <span>{{ user.first_name|first|default:user.username|first|upper }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data" id="avatar-form" class="avatar-form">
+                        {% csrf_token %}
+                        <input 
+                            type="file" 
+                            id="avatar-input" 
+                            name="avatar" 
+                            accept="image/*"
+                            style="display: none;"
+                        >
+                        <button type="button" class="btn-upload-avatar" onclick="document.getElementById('avatar-input').click()">
+                            <i class="bi bi-cloud-upload"></i>
+                            Seleccionar Foto
+                        </button>
+                        <button type="submit" class="btn-save-avatar" style="display: none;">
+                            <i class="bi bi-check2"></i>
+                            Guardar Foto
+                        </button>
+                    </form>
+
+                    <p class="avatar-help">
+                        <i class="bi bi-info-circle"></i>
+                        Formatos aceptados: JPG, PNG, GIF<br>
+                        Tamaño máximo: 5MB
+                    </p>
+                </div>
+            </div>
+
+            <!-- INFORMACIÓN DE CUENTA -->
+            <div class="edit-section">
+                <div class="edit-section-header">
+                    <h2 class="edit-section-title">
+                        <i class="bi bi-shield-check"></i>
+                        Información de Cuenta
+                    </h2>
+                </div>
+
+                <div class="account-info-list">
+                    <div class="account-info-item">
+                        <div class="account-info-label">
+                            <i class="bi bi-person-badge"></i>
+                            Usuario
+                        </div>
+                        <div class="account-info-value">{{ user.username }}</div>
+                    </div>
+
+                    <div class="account-info-item">
+                        <div class="account-info-label">
+                            <i class="bi bi-calendar-check"></i>
+                            Miembro desde
+                        </div>
+                        <div class="account-info-value">{{ user.date_joined|date:"d M Y" }}</div>
+                    </div>
+
+                    <div class="account-info-item">
+                        <div class="account-info-label">
+                            <i class="bi bi-clock-history"></i>
+                            Último acceso
+                        </div>
+                        <div class="account-info-value">{{ user.last_login|date:"d M Y H:i" }}</div>
+                    </div>
+                </div>
+
+                <a href="{% url 'change_password' %}" class="btn-change-password">
+                    <i class="bi bi-key"></i>
+                    Cambiar Contraseña
+                </a>
+            </div>
+
+            <!-- CONSEJOS -->
+            <div class="edit-section edit-section-tips">
+                <div class="tips-content">
+                    <i class="bi bi-lightbulb-fill"></i>
+                    <h3>Consejo</h3>
+                    <p>Mantén tu información actualizada para que podamos brindarte un mejor servicio y contactarte en caso de emergencias.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview de la imagen antes de subirla
+document.getElementById('avatar-input').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewImg = document.getElementById('avatar-preview-img');
+            const placeholder = document.getElementById('avatar-preview-placeholder');
+            
+            if (previewImg) {
+                previewImg.src = e.target.result;
+            } else if (placeholder) {
+                placeholder.outerHTML = '<img id="avatar-preview-img" src="' + e.target.result + '" alt="Avatar preview">';
+            }
+            
+            // Mostrar botón de guardar
+            document.querySelector('.btn-save-avatar').style.display = 'inline-flex';
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Validación del formulario
+document.querySelector('.edit-profile-form').addEventListener('submit', function(e) {
+    const phone = document.getElementById('phone').value;
+    if (phone && !/^[\d\s\+\-\(\)]+$/.test(phone)) {
+        e.preventDefault();
+        alert('Por favor ingresa un número de teléfono válido');
+        return false;
+    }
+});
+</script>
+{% endblock %}

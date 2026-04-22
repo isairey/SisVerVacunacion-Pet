@@ -1,0 +1,222 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Gestión de Servicios - Vetify Admin{% endblock %}
+{% block page_title %}Gestión de Servicios{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-bar { background:white; border-radius:1rem; padding:1.5rem; margin-bottom:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    .search-input { width:100%; padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:1rem; }
+    .search-input:focus { outline:none; border-color:#38bdf8; }
+    .table-container { background:white; border-radius:1rem; padding:1.5rem; box-shadow:0 1px 3px rgba(0,0,0,0.1); }
+    .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .table-title { font-size:1.25rem; font-weight:700; color:#0f172a; }
+    .table-count { color:#6b7280; font-size:0.875rem; }
+    .services-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px, 1fr)); gap:1.5rem; }
+    .service-card { background:white; border:2px solid #e5e7eb; border-radius:1rem; padding:1.5rem; transition:all 0.3s; }
+    .service-card:hover { border-color:#38bdf8; box-shadow:0 4px 12px rgba(56,189,248,0.2); transform:translateY(-2px); }
+    .service-card.inactive { opacity:0.6; border-color:#d1d5db; }
+    .service-icon { width:64px; height:64px; background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 100%); border-radius:1rem; display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:1rem; }
+    .service-name { font-size:1.125rem; font-weight:700; color:#0f172a; margin-bottom:0.5rem; }
+    .service-description { color:#6b7280; font-size:0.875rem; line-height:1.5; margin-bottom:1rem; }
+    .service-details { background:#f9fafb; border-radius:0.5rem; padding:1rem; margin-bottom:1rem; }
+    .detail-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; }
+    .detail-row:last-child { margin-bottom:0; }
+    .detail-label { font-size:0.875rem; color:#6b7280; }
+    .detail-value { font-size:0.875rem; font-weight:600; color:#0f172a; }
+    .badge { display:inline-block; padding:0.25rem 0.75rem; border-radius:9999px; font-size:0.75rem; font-weight:600; }
+    .badge-active { background:#d1fae5; color:#065f46; }
+    .badge-inactive { background:#fee2e2; color:#991b1b; }
+    .service-actions { display:flex; gap:0.5rem; padding-top:1rem; border-top:1px solid #e5e7eb; }
+    .action-btn { flex:1; padding:0.5rem; border:none; border-radius:0.375rem; font-size:0.75rem; font-weight:600; cursor:pointer; transition:all 0.3s; text-decoration:none; text-align:center; display:inline-block; }
+    .btn-toggle { background:#fef3c7; color:#92400e; }
+    .btn-toggle:hover { background:#fde68a; }
+    .btn-edit { background:#dbeafe; color:#1e40af; }
+    .btn-edit:hover { background:#bfdbfe; }
+    .empty-state { text-align:center; padding:3rem; color:#9ca3af; }
+    .empty-icon { font-size:3rem; margin-bottom:1rem; }
+    .btn { padding:0.625rem 1.25rem; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer; transition:all 0.3s; font-size:0.875rem; }
+    .btn-primary { background:#38bdf8; color:white; }
+    .btn-primary:hover { background:#0284c7; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-bar">
+    <form method="GET">
+        <input type="text" name="search" class="search-input"
+               placeholder="Buscar servicio por nombre o descripción..."
+               value="{{ search }}">
+    </form>
+</div>
+
+<div class="table-container">
+    <div class="table-header">
+        <div>
+            <h2 class="table-title"><i class="bi bi-bandaid"></i> Listado de Servicios</h2>
+            <p class="table-count">{{ total_count }} servicio{{ total_count|pluralize }} - {{ active_count }} activo{{ active_count|pluralize }}</p>
+        </div>
+        <button onclick="document.getElementById('modalCrearServicio').style.display='flex'" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nuevo Servicio
+        </button>
+    </div>
+
+    {% if services %}
+    <div class="services-grid">
+        {% for service in services %}
+        <div class="service-card {% if not service.is_active %}inactive{% endif %}">
+            <div class="service-icon"><i class="{{ service.icon }}"></i></div>
+            <h3 class="service-name">{{ service.name }}</h3>
+            <div class="badge {% if service.is_active %}badge-active{% else %}badge-inactive{% endif %}" style="margin-bottom:0.75rem;">
+                {% if service.is_active %}<i class="bi bi-check"></i> Activo{% else %}<i class="bi bi-x"></i> Inactivo{% endif %}
+            </div>
+            <p class="service-description">{{ service.description }}</p>
+            <div class="service-details">
+                <div class="detail-row">
+                    <span class="detail-label"><i class="bi bi-clock"></i> Duración</span>
+                    <span class="detail-value">{{ service.duration }} min</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label"><i class="bi bi-cash"></i> Precio</span>
+                    <span class="detail-value">${{ service.price }}</span>
+                </div>
+            </div>
+            <div class="service-actions">
+                <button onclick="openEditService({{ service.id }}, '{{ service.name }}', '{{ service.description|escapejs }}', {{ service.duration }}, {{ service.price }}, '{{ service.icon }}')"
+                        class="action-btn btn-edit">
+                    <i class="bi bi-pencil"></i> Editar
+                </button>
+                <a href="{% url 'admin_dashboard:toggle_service_status' service.id %}"
+                   class="action-btn btn-toggle"
+                   onclick="return confirm('¿Cambiar estado del servicio?')">
+                    {% if service.is_active %}<i class="bi bi-lock"></i> Desactivar{% else %}<i class="bi bi-check-circle"></i> Activar{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon"><i class="bi bi-bandaid"></i></div>
+        <h3>No hay servicios</h3>
+        <p>Crea el primero con el botón de arriba</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal Crear Servicio -->
+<div id="modalCrearServicio" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; margin:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;"><i class="bi bi-plus-circle"></i> Nuevo Servicio</h2>
+            <button onclick="document.getElementById('modalCrearServicio').style.display='none'"
+                    style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#6b7280;">✕</button>
+        </div>
+        <form method="POST" action="{% url 'admin_dashboard:create_service' %}">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Nombre *</label>
+                    <input type="text" name="name" required placeholder="ej: Consulta General"
+                           style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Descripción *</label>
+                    <textarea name="description" required rows="3"
+                              style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem; resize:vertical;"></textarea>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Duración (min) *</label>
+                        <input type="number" name="duration" required min="1" placeholder="30"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Precio *</label>
+                        <input type="number" name="price" required min="0" step="0.01" placeholder="500.00"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Icono Bootstrap</label>
+                    <input type="text" name="icon" value="bi bi-clipboard-pulse" placeholder="bi bi-clipboard-pulse"
+                           style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    <small style="color:#6b7280; font-size:0.75rem; display:flex; gap:1rem; flex-wrap:wrap;">
+                        <span><i class="bi bi-heart-pulse"></i> bi bi-heart-pulse</span>
+                        <span><i class="bi bi-capsule"></i> bi bi-capsule</span>
+                        <span><i class="bi bi-hospital"></i> bi bi-hospital</span>
+                    </small>
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" onclick="document.getElementById('modalCrearServicio').style.display='none'"
+                        class="btn" style="flex:1; background:white; border:2px solid #e5e7eb; color:#374151;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">
+                    <i class="bi bi-save"></i> Crear Servicio
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Servicio -->
+<div id="modalEditarServicio" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; border-radius:1rem; padding:2rem; width:100%; max-width:520px; max-height:90vh; overflow-y:auto; margin:1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+            <h2 style="font-size:1.25rem; font-weight:700; color:#0f172a;"><i class="bi bi-pencil"></i> Editar Servicio</h2>
+            <button onclick="document.getElementById('modalEditarServicio').style.display='none'"
+                    style="background:none; border:none; font-size:1.5rem; cursor:pointer; color:#6b7280;">✕</button>
+        </div>
+        <form method="POST" id="formEditarServicio" action="">
+            {% csrf_token %}
+            <div style="display:flex; flex-direction:column; gap:1rem;">
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Nombre *</label>
+                    <input type="text" name="name" id="editServiceName" required
+                           style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Descripción *</label>
+                    <textarea name="description" id="editServiceDesc" required rows="3"
+                              style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem; resize:vertical;"></textarea>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Duración (min) *</label>
+                        <input type="number" name="duration" id="editServiceDuration" required min="1"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                        <label style="font-size:0.875rem; font-weight:600; color:#374151;">Precio *</label>
+                        <input type="number" name="price" id="editServicePrice" required min="0" step="0.01"
+                               style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Icono Bootstrap</label>
+                    <input type="text" name="icon" id="editServiceIcon"
+                           style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.375rem; font-size:0.875rem;">
+                </div>
+            </div>
+            <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+                <button type="button" onclick="document.getElementById('modalEditarServicio').style.display='none'"
+                        class="btn" style="flex:1; background:white; border:2px solid #e5e7eb; color:#374151;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" style="flex:2;">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditService(id, name, description, duration, price, icon) {
+    document.getElementById('editServiceName').value = name;
+    document.getElementById('editServiceDesc').value = description;
+    document.getElementById('editServiceDuration').value = duration;
+    document.getElementById('editServicePrice').value = price;
+    document.getElementById('editServiceIcon').value = icon;
+    document.getElementById('formEditarServicio').action = `/dashboard/services/${id}/edit/`;
+    document.getElementById('modalEditarServicio').style.display = 'flex';
+}
+</script>
+{% endblock %}

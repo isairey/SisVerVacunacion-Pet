@@ -1,0 +1,107 @@
+{% extends 'admin_dashboard/base.html' %}
+{% block title %}Editar Veterinario - Vetify Admin{% endblock %}
+{% block page_title %}Editar Veterinario{% endblock %}
+
+{% block content %}
+<div style="max-width:800px; margin:0 auto;">
+    <div style="background:white; border-radius:1rem; padding:2rem; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem;">
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Nombre completo *</label>
+                    <input type="text" name="name" required value="{{ vet.name }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Email *</label>
+                    <input type="email" name="email" required value="{{ vet.email }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Teléfono</label>
+                    <input type="text" name="phone" value="{{ vet.phone }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Cédula profesional *</label>
+                    <input type="text" name="license_number" required value="{{ vet.license_number }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Especialidad *</label>
+                    <select name="specialty" required style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                        <option value="general" {% if vet.specialty == 'general' %}selected{% endif %}>Medicina General</option>
+                        <option value="surgery" {% if vet.specialty == 'surgery' %}selected{% endif %}>Cirugía</option>
+                        <option value="dental" {% if vet.specialty == 'dental' %}selected{% endif %}>Odontología</option>
+                        <option value="dermatology" {% if vet.specialty == 'dermatology' %}selected{% endif %}>Dermatología</option>
+                        <option value="cardiology" {% if vet.specialty == 'cardiology' %}selected{% endif %}>Cardiología</option>
+                        <option value="emergency" {% if vet.specialty == 'emergency' %}selected{% endif %}>Emergencias</option>
+                    </select>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Años de experiencia</label>
+                    <input type="number" name="years_experience" min="0" value="{{ vet.years_experience }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora inicio</label>
+                    <input type="time" name="start_time" value="{{ vet.start_time|time:'H:i' }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:0.25rem;">
+                    <label style="font-size:0.875rem; font-weight:600; color:#374151;">Hora fin</label>
+                    <input type="time" name="end_time" value="{{ vet.end_time|time:'H:i' }}"
+                           style="padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+                </div>
+            </div>
+
+            <!-- Bio -->
+            <div style="display:flex; flex-direction:column; gap:0.25rem; margin-bottom:1rem;">
+                <label style="font-size:0.875rem; font-weight:600; color:#374151;">Biografía</label>
+                <textarea name="bio" rows="3"
+                          style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem; resize:vertical;">{{ vet.bio }}</textarea>
+            </div>
+
+            <!-- Foto -->
+            <div style="display:flex; flex-direction:column; gap:0.25rem; margin-bottom:1rem;">
+                <label style="font-size:0.875rem; font-weight:600; color:#374151;">Foto</label>
+                {% if vet.photo %}
+                <div style="margin-bottom:0.5rem;">
+                    <img src="{{ vet.photo.url }}" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
+                </div>
+                {% endif %}
+                <input type="file" name="photo" accept="image/*"
+                       style="padding:0.625rem; border:1px solid #d1d5db; border-radius:0.5rem; font-size:0.875rem;">
+            </div>
+
+            <!-- Servicios -->
+            <div style="display:flex; flex-direction:column; gap:0.25rem; margin-bottom:1.5rem;">
+                <label style="font-size:0.875rem; font-weight:600; color:#374151;">Servicios que ofrece</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; background:#f9fafb; border:1px solid #d1d5db; border-radius:0.5rem; padding:0.75rem;">
+                    {% for service in services %}
+                    <label style="display:flex; align-items:center; gap:0.5rem; font-size:0.875rem; cursor:pointer;">
+                        <input type="checkbox" name="services" value="{{ service.id }}"
+                               {% if service.id in selected_services %}checked{% endif %}>
+                        {{ service.name }}
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div style="display:flex; gap:1rem;">
+                <a href="{% url 'admin_dashboard:veterinarians' %}"
+                   style="flex:1; padding:0.875rem; text-align:center; background:white; border:2px solid #e5e7eb; border-radius:0.5rem; font-weight:600; text-decoration:none; color:#374151;">
+                    Cancelar
+                </a>
+                <button type="submit"
+                        style="flex:2; padding:0.875rem; background:#0284c7; color:white; border:none; border-radius:0.5rem; font-weight:600; cursor:pointer;">
+                    <i class="bi bi-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
